@@ -427,7 +427,7 @@ if prompt:
         elif not openai_client:
             st.error("OpenAI API 키가 설정되지 않았습니다.")
         else:
-            with st.spinner("홍성남 신부님의 강의를 찾고 있습니다..."):
+            with st.spinner("잠시만 기다려 주세요. 토마스 형제님께서 열심히 찾고 있습니다...."):
                 results = search_similar(db, prompt, n_results=n_results)
 
                 if results and results['documents']:
