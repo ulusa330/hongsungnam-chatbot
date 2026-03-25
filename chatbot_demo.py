@@ -306,6 +306,12 @@ with st.sidebar:
     openai_client = init_openai()
 
     if db:
+        st.markdown("""
+        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.8rem; margin-top: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+            <span style="color: #C9A84C; font-size: 0.85rem;">⚠ 이 프로그램은 테스트 용도로 만들어진 것입니다.</span>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown(f"""
         <div class="stat-card">
             <div class="number">{db['count']:,}</div>
@@ -345,9 +351,9 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("""
     <div style="font-size: 0.75rem; color: #8899bb;">
-        <b>홍성남 신부님</b><br>
-        가톨릭영성심리상담소 소장<br>
-        유튜브: 톡쏘는 영성심리<br><br>
+        <b> 개발 : 이재욱 토마스 </b><br>
+         talktoclinic@gmail.com <br>
+        유튜브: youtube.com/@fr.hongsungnam<br><br>
         <b>Powered by</b><br>
         OpenAI GPT-4o-mini<br>
         벡터 검색 (numpy)
