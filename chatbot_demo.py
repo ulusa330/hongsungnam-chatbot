@@ -128,6 +128,13 @@ st.markdown("""
         border-top: 1px solid #e0e0e0;
         margin-top: 2rem;
     }
+  .stTextInput input, .stChatInput textarea {
+    background-color: #FFFFFF !important;
+    color: #1B2B5E !important;
+}
+.stChatInput {
+    background-color: #FFFFFF !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
