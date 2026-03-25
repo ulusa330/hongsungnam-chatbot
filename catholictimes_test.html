@@ -1,0 +1,355 @@
+	                								
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko"><head>
+<title>가톨릭신문</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="keywords" content="가톨릭신문">
+<meta name="description" content="가톨릭신문">
+<meta name="copyright" content="가톨릭신문">
+<meta name="author" content="가톨릭신문">
+<meta property="og:title" content="가톨릭신문">
+<meta property="og:description" content="가톨릭신문">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<link rel="shortcut icon" href="https://www.catholictimes.org/favicon.ico">
+<link rel="canonical" href="http://www.catholictimes.org">
+<link type="text/css" rel="stylesheet" href="../css/korean/basic.css">
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="../js/odometer.js"></script>
+<script type="text/javascript" src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/jquery.bxslider.min.js"></script>
+<script type="text/javascript" src="../js/func.js"></script>
+<script type="text/javascript" src="../js/jquery.cookie.js"></script>
+<script type="text/javascript" src="../js/highslide/highslide.js"></script>
+<link rel="stylesheet" type="text/css" href="../js/highslide/highslide.css" />
+<script type="text/javascript">
+    // override Highslide settings here
+    // instead of editing the highslide.js file
+    hs.graphicsDir = '../js/highslide/graphics/';
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C20RS3E25G"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-C20RS3E25G');
+</script>
+<!--
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-37305531-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+--><link type="text/css" rel="stylesheet" href="../css/korean/sub.css?ver=20171214"></head>
+
+<body>
+<script type="text/javascript">
+$(document).ready(function(){
+	// 검색 버튼
+	$("#btnSearchAll").click(function(){
+		fn_searchAll();
+	});
+	
+	// 검색창 엔터
+	$("#sa_word").on("keydown", function(event){
+		if(event.keyCode == 13){
+			fn_searchAll();
+		} 
+	});
+});	
+function fn_searchAll() {
+	if (isEmpty($("#sa_word").val())) {
+		alert("검색어를 입력해 주세요.");
+		$("#sa_word").focus();
+		return;
+	}
+	document.searchAllForm.submit();
+}
+</script>
+<dl id="accessibility">
+	<dt>컨텐츠 바로가기 영역</dt>
+	<dd><a href="#content">본문으로 바로가기</a></dd>
+</dl>
+<div id="wrap">
+<!-- 상단영역 -->
+<div id="header">
+	<div class="headerWrap float-wrap">
+		<a href="/"><h1 class="logo float-left"><img src="../images/korean/common/logo_0.png" alt="가톨릭신문로고">&nbsp;&nbsp;<img src="../images/korean/common/logo.png" alt="가톨릭신문" style="padding:0px 0px 4px;"></h1></a>
+		<div class="gnb float-right">
+			<ul class="float-left">
+				<li><a href="/">HOME</a></li>
+				
+				<li><a href="../member/login.php">로그인</a></li>				
+				<li><a href="../article/pdf_list.php">지면보기</a></li>				
+				<li><a href="../member/join_step1.php">회원가입</a></li>		
+						
+                <li class="date">제3384호 2024년 03월 17일자</li>
+                <li class="news_link"><a href="https://www.youtube.com/channel/UCvbex9jMX6WqPOcZt8DGDhg" style="background:#fff;" target="_blank" title="새 창"><img style="width:78px;" src="../../images/korean/sub/img_youtube.gif" alt=""></a></li>		
+			</ul>
+        	<div class="float-left input-box">
+            <label for="search">SEARCH</label>
+            <form name="searchAllForm" method="get" action="../article/searchmy.php">
+            <input type="text" name="sa_word" id="sa_word" />
+            <input type="text" name="sa_hid" id="sa_hid" style="display:none;"/>
+            </form>
+            <a href="#" id="btnSearchAll" onclick="return false;"><img src="../images/korean/common/btn_micro.png" alt="찾기" /></a>
+          </div>
+
+		</div>	
+		<div id="gnavigation" class="float-wrap">
+        	<div class="float-left"><a href="#">메뉴</a></div>
+			<ul class="float-right">
+				<li><a href="../article/article_list.php?acid=1"><span>종합</span></a></li>
+				<li><a href="../article/article_list.php?acid=3"><span>세계교회</span></a></li>
+				<!--<li><a href="../article/article_list.php?acid=635"><span>군복음화</span></a></li>-->
+				<li><a href="../article/article_list.php?acid=5"><span>문화</span></a></li>
+				<li><a href="../article/article_list.php?acid=925"><span>출판</span></a></li>
+				<li><a href="../article/article_list.php?acid=11"><span>교리/말씀</span></a></li>
+				<li><a href="../article/article_list.php?acid=810"><span>생태/환경</span></a></li>
+				<li><a href="../article/article_list.php?acid=4"><span>사람과사람</span></a></li>
+				<li><a href="../article/article_list.php?acid=10"><span>열린마당</span></a></li>
+				<li class="on"><a href="../article/article_list.php?acid=9"><span>기획</span></a></li>
+				<li><a href="../article/article_list.php?acid=926">특집</span></a></li>
+				<li><a href="../article/article_list.php?acid=301"><span>사고</span></a></li>
+				<li><a href="../article/article_list.php?acid=21"><span>수원교구</span></a></li>
+			</ul>
+			<span style="display:none">/article/article_list.php</span>
+		</div>
+	</div>	
+</div>
+
+<div class="gnavi-depth2">
+            <div class="float-wrap">
+            <ul class="float-right">
+                <li><p><a href="../article/article_list.php?acid=1">종합</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=22">새 성당 봉헌식</a></li>
+                        <li><a href="../article/article_list.php?acid=56">사랑 나눌수록 커집니다</a></li>
+                    </ul>                    
+                </li>
+                <li><p><a href="../article/article_list.php?acid=3">세계교회</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=8111">글로벌 칼럼</a></li>
+                    </ul>    
+                </li>
+                <li><p><a href="../article/article_list.php?acid=635">군복음화</a></p>
+                    <ul>
+                    </ul> 
+                </li>
+                <li><p><a href="../article/article_list.php?acid=5">문화</a></p>
+                    <ul>
+                    </ul> 
+                </li>
+                </li>
+                <li><p><a href="../article/article_list.php?acid=925">출판</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=936">이달의 잡지</a></li>
+                    </ul> 
+                </li>
+                 <li><p><a href="../article/article_list.php?acid=11">교리/말씀</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=840">말씀묵상</a></li>
+                        <li><a href="../article/article_list.php?acid=800">QR로 듣는 교황님 말씀</a></li>
+                        <li><a href="../article/article_list.php?acid=862">더 쉬운 사회교리 해설</a></li>
+                        <li><a href="../article/article_list.php?acid=861">더 쉬운 믿을교리 해설</a></li>
+                        <li><a href="../article/article_list.php?acid=878">교리말씀퀴즈</a></li>
+                    </ul>    
+                </li>
+                <li><p><a href="../article/article_list.php?acid=810">생태/환경</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=922">우리 본당 탄소중립</a></li>
+                        <li><a href="../article/article_list.php?acid=923">함께해요 생태적 실천</a></li>
+                    </ul> 
+                </li>
+                <li><p><a href="../article/article_list.php?acid=4">사람과사람</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=759">사제서품</a></li>
+                        <li><a href="../article/article_list.php?acid=24">동정</a></li>
+                        <li><a href="../article/article_list.php?acid=23">사제인사</a></li>
+                        <li><a href="../article/article_list.php?acid=25">위령기도를</a></li>
+                    </ul> 
+                </li>
+                <li><p><a href="../article/article_list.php?acid=10">열린마당</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=867">명예기자 단상</a></li>
+                        <li><a href="../article/article_list.php?acid=134">일요한담</a></li>
+                        <li><a href="../article/article_list.php?acid=836">신앙인의 눈</a></li>
+                        <li><a href="../article/article_list.php?acid=700">민족·화해·일치</a></li>
+                        <li><a href="../article/article_list.php?acid=134">일요한담</a></li>
+                        <li><a href="../article/article_list.php?acid=934">주간 시선</a></li>
+                        <li><a href="../article/article_list.php?acid=137">사설</a></li>
+                        <li><a href="../article/article_list.php?acid=140">특별기고</a></li>
+                        <li><a href="../article/article_list.php?acid=139">독자마당</a></li>
+                        <li><a href="../article/article_list.php?acid=141">독자기자석</a></li>
+                        <li><a href="../article/article_list.php?acid=489">현장에서</a></li>
+                    </ul>    
+                </li>
+                <li><p><a href="../article/article_list.php?acid=9">기획</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=689">가톨릭신문이 만난 사람</a></li>
+                        <li><a href="../article/article_list.php?acid=935">가톨릭학교를 찾아서</a></li>
+                        <li><a href="../article/article_list.php?acid=920">김도현 신부의 과학으로 하느님 알기</a></li>
+                        <li><a href="../article/article_list.php?acid=931">우리 시대의 성인들</a></li>
+                        <li><a href="../article/article_list.php?acid=898">정희완 신부의 신학서원-세상을 읽는 신학</a></li>
+                        <li><a href="../article/article_list.php?acid=897">홍성남 신부의 톡 쏘는 영성</a></li>
+                        <li><a href="../article/article_list.php?acid=937">한국교회와 시노달리타스</a></li>
+                        <li><a href="../article/article_list.php?acid=933">한마음한몸 자살에방센터 공동기획 우리는 모두 하나</a></li>
+                        <li><a href="../article/article_list.php?acid=164">커버스토리</a></li>
+                    </ul>    
+                </li>
+                <li><p><a href="../article/article_list.php?acid=926">특집</a></p>
+                    <ul>
+                    </ul>    
+                </li>
+                <li><p><a href="../article/article_list.php?acid=21">수원교구</a></p>
+                    <ul>
+                        <li><a href="../article/article_list.php?acid=938">교구에서 만난 한국교회사</a></li>
+                        <li><a href="../article/article_list.php?acid=835">신앙 에세이</a></li>
+                        <li><a href="../article/article_list.php?acid=833">선교지는 지금</a></li>
+                        <li><a href="../article/article_list.php?acid=767">밀알 하나</a></li>
+                        <li><a href="../article/article_list.php?acid=763">칭찬 릴레이</a></li>
+                        <li><a href="../article/article_list.php?acid=440">기도해 주세요</a></li>
+                        <li><a href="../article/article_list.php?acid=178">종합</a></li>
+                        <li><a href="../article/article_list.php?acid=177">공동체</a></li>
+                    </ul>    
+                </li>
+            </ul>
+            
+            <p><a href="#" class="close"><img src="../images/korean/common/btn_gnavi_close.gif" alt="닫기" /></a></p>
+            
+            </div>
+        </div>  
+
+<!-- //상단영역 --> <!-- 서브컨텐츠영역 -->
+<div class="container-fluid area-view">
+	<div class="container">
+		<div class="content_top">
+        <div class="location float-wrap">
+          <div class="float-left"> <span class="home">Home</span> <span class="bullet">&gt;</span> <strong class="bold">0</strong> </div>
+          <div class="float-right"> <!--span><a href="#"><img src="../images/korean/sub/btn_tw.png" alt="트위터"></a></span> <span><a href="#"><img src="../images/korean/sub/btn_pr.png" alt="프린트"></a></span--> </div>
+        </div>
+      </div>
+      <div class="float-wrap">
+      <h2 class="bold float-left">NEWS</h2>
+      
+      </div>
+      <ul class="view-list">
+                  
+      </ul>
+      
+	  <div class="pagenate">
+      <p class="paging">
+<span class="pagingBtn first"><a href="#" onclick="return false;" style="cursor:default;">맨앞</a></span>
+<span class="pagingBtn prev"><a href="#" onclick="return false;" style="cursor:default;">이전10개</a></span>
+<span class="selected"><a href="?page=1&acid=897"><em>1</em></a></span>
+<span><a href="?page=2&acid=897">2</a></span>
+<span><a href="?page=3&acid=897">3</a></span>
+<span><a href="?page=4&acid=897">4</a></span>
+<span><a href="?page=5&acid=897">5</a></span>
+<span><a href="?page=6&acid=897">6</a></span>
+<span><a href="?page=7&acid=897">7</a></span>
+<span class="pagingBtn next"><a href="#" onclick="return false;" style="cursor:default;">다음10개</a></span>
+<span class="pagingBtn last"><a href="?page=7&acid=897">맨뒤</a></span>
+</p>
+      </div>      
+      
+      
+    </div>
+</div>    
+<!-- //서브컨텐츠영역 -->
+﻿<!-- 퀵매뉴영역 -->
+<!--
+<div class="quick-area text-center">
+	<p class="title"><img src="../images/korean/common/quick-title.gif" alt="QUICK MENU" /></p>
+    <ul>
+    	
+    	<li><a href="#"><span><img src="../images/korean/common/quick-icon02.gif" alt="" /></span><span class="txt">공유하기</span></a></li>
+    	<li><a href="#"><span><img src="../images/korean/common/quick-icon03.gif" alt="" /></span><span class="txt">이메일</span></a></li>
+    	<li><a href="#"><span><img src="../images/korean/common/quick-icon04.gif" alt="" /></span><span class="txt">RSS신청</span></a></li>                        
+    </ul>
+	<p class="top"><a href="#"><img src="../images/korean/common/quick-top.gif" alt="Top" /></a></p>
+    <p class="btn"><a href="#"><img src="../images/korean/common/quick-btn01.gif" alt="열기" /></a></p>
+</div>
+-->
+<!-- //서브컨텐츠영역 -->
+<script type="text/javascript">
+$(document).ready(function(){
+	// 교구 홈페이지
+	$("#parish_home").change(function(){
+		var home_url = $('#parish_home option:selected').val()
+		if (home_url != "") {
+			window.open(home_url, "_blank");
+		}
+	});
+});	
+</script>
+<div id="footer" class="container-fluid row">
+   	<div class="footer-top">
+       	<div class="container">
+           	<ul class="cooper-slide">
+               	<li><a href="http://www.cbck.or.kr/" target="_blank"><img src="../images/korean/common/img_banner01.jpg" alt="한국천주교주교회의" /></a></li>
+               	<li><a href="http://www.cttour.org/" target="_blank"><img src="../images/korean/common/img_banner02.jpg" alt="가톨릭신문사 투어" /></a></li>
+               	<li><a href="http://www.history.re.kr/" target="_blank"><img src="../images/korean/common/img_banner03.jpg" alt="한국교회사연구소" /></a></li>
+                <li><a href="http://w2.vatican.va/" target="_blank"><img src="../images/korean/common/img_banner05.jpg" alt="바티칸" /></a></li>
+               	<li><a href="https://www.vaticannews.va/ko.html" target="_blank"><img src="../images/korean/common/img_banner06.jpg" alt="바티칸 방송국" /></a></li>
+               	<li><a href="http://www.dgpbc.co.kr/" target="_blank"><img src="../images/korean/common/img_banner07.jpg" alt="대구평화방송" /></a></li>
+               	<li><a href="http://www.catholic.or.kr/" target="_blank"><img src="../images/korean/common/img_banner09.jpg" alt="가톨릭굿뉴스" /></a></li>
+               	<li><a href="http://www.ucanews.org/" target="_blank"><img src="../images/korean/common/img_banner10.jpg" alt="UCAN" /></a></li>
+               	<li><a href="http://www.xinde.org/" target="_blank"><img src="../images/korean/common/img_banner11.jpg" alt="FAITH WEEKLY" /></a></li>
+               	<li><a href="http://www.catholicnews.com/" target="_blank"><img src="../images/korean/common/img_banner12.jpg" alt="CNS" /></a></li>
+               	<li><a href="http://hsstudyc.org.hk/" target="_blank"><img src="../images/korean/common/img_banner13.jpg" alt="HK" /></a></li>
+               </ul>                
+               <div class="float-right counsel bold">고객상담<strong>1588-1927</strong></div>
+           </div>
+       </div>
+
+	<div class="container">
+		<div class="float-right">
+           <h1 class="text-right"><a href="/"><img src="../images/korean/common/bottom_logo.png" alt="가톨릭신문사" /></a></h1>
+           <select name="parish_home" id="parish_home" class="form-control normal">
+           <option value="">교구홈페이지</option>
+           <option value="http://aos.catholic.or.kr/">서울대교구</option>
+           <option value="http://www.daegu-archdiocese.or.kr/">대구대교구</option>
+           <option value="http://www.gjcatholic.or.kr/">광주대교구</option>
+           <option value="http://www.catholicbusan.or.kr/">부산교구</option>
+           <option value="http://www.casuwon.or.kr/casuwon/">수원교구</option>
+           <option value="http://ucatholic.or.kr/">의정부교구</option>
+           <option value="http://www.caincheon.or.kr/">인천교구</option>
+           <option value="http://www.cccatholic.or.kr/">춘천교구</option>
+           <option value="http://www.wjcatholic.or.kr/">원주교구</option>
+           <option value="http://www.djcatholic.or.kr/">대전교구</option>
+           <option value="http://www.cdcj.or.kr/">청주교구</option>
+           <option value="http://www.jcatholic.or.kr/">전주교구</option>
+           <option value="http://www.acatholic.or.kr/">안동교구</option>
+           <option value="http://cathms.kr/">마산교구</option>
+           <option value="http://www.diocesecheju.org/">제주교구</option>
+           <option value="http://www.gunjong.or.kr/">군종교구</option>
+           </select>
+        </div>
+		<div class="float-left group">
+               <ul class="bold">
+               		 <li><a href="../cmmn/ct_english.php">Introduction</a></li>
+                   <li><a href="../cmmn/ct_sasi.php">회사소개</a></li>
+                   <li><a href="../cmmn/personal_info.php">개인정보취급방침</a></li>
+                   <li><a href="../subscr/subscr_info.php" class="accent">구독신청 및 문의</a></li>
+                   <li><a href="../cmmn/ad_info.php">광고안내</a></li>
+                   <li><a href="../cmmn/report.php">기사제보</a></li>
+                   <li><a href="../cmmn/free_board_list.php">자유게시판</a></li>
+               </ul>                                                                                   										
+               <address>
+               <span>본사</span>41933 대구광역시 중구 서성로 20(계산동 2가 71) Tel.1588-1927 / Fax.053)252-4289 / 대표자명 : 최성준 / 사업자등록번호 : 501-81-15062 <br />
+               <span>서울본사</span>04919 서울특별시 광진구 능동로37길 11(중곡동) Tel.02-778-7671~3</address>
+               <div class="copyright">Copyright © 2016 <strong>CATHOLIC TIMES</strong> All rights reserved.New</div>
+			<p class="warning">본 사이트에 게시된 가톨릭신문의 모든 콘텐츠는 저작권법의 보호를 받으며, 무단전재 및 복사.배포를 금합니다.</p>                
+		</div>
+	</div>
+</div>
+</body>
+</html>
