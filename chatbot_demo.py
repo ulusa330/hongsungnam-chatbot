@@ -140,15 +140,15 @@ st.markdown("""
 @media (max-width: 768px) {
     [data-testid="stSidebar"] { display: none !important; }
     .main .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
-    .main-header { padding: 1.2rem 1rem !important; border-radius: 10px !important; }
+    .main-header { padding: 1.2rem 1rem !important; border-radius: 10px !important; margin-bottom: 0.5rem !important; }
     .main-header h1 { font-size: 1.4rem !important; }
+    h4 { font-size: 1.1rem !important; margin-top: 0 !important; }
     .stChatMessage, .stChatMessage p { font-size: 1.15rem !important; line-height: 1.8 !important; }
     .stButton > button { font-size: 1.1rem !important; padding: 1rem 1.2rem !important; min-height: 60px !important; border-radius: 12px !important; white-space: normal !important; background-color: #1B2B5E !important; color: white !important; border: none !important; }
     .stChatInput textarea { font-size: 1.15rem !important; min-height: 50px !important; background-color: #FFFFFF !important; color: #1B2B5E !important; }
     [data-testid="column"] { width: 100% !important; flex: 100% !important; min-width: 100% !important; }
     .footer { font-size: 0.8rem !important; }
 }
-
 
 </style>
 """, unsafe_allow_html=True)
@@ -250,10 +250,9 @@ def generate_response(query, context_docs, context_metas):
 
 [상담 안내 필수 규칙]
 사용자가 홍성남 신부님께 직접 상담을 받고 싶다고 하거나, 상담 신청 방법을 물어보면 반드시 아래 안내를 포함하세요:
-1. talktoclinic@gmail.com로 사연을 보내시면, 신부님과 맹경순 선생님께서 의견을 모아 방송을 통한 상담을 해 주실 수 있습니다.
-2. 직접 상담을 원하시는 경우 가톨릭영성심리상담소(02-776-8405, 오전 11시~오후 4시 상담 가능)로 전화하시면 
-전문 상담가 선생님들의 상담을 받으실 수 있습니다.
-3. 신부님께서는 성직자 상담만 하시는 점 알려 드립니다.
+1. 먼저, 신부님께서는 성직자 상담만 하시는 점 알려 드립니다. 
+2. talktoclinic@gmail.com로 사연을 보내시면, 신부님과 맹경순 선생님께서 의견을 모아 방송을 통한 상담을 해 주실 수 있습니다.
+3. 가톨릭영성심리상담소(02-727-2516, 오전 11시~오후 4시 상담 가능)로 연락 주시면, 전문 상담가 선생님들의 상담을 받으실 수 있도록 도와 드리고 있습니다.
 
 
 [역할]
@@ -362,7 +361,7 @@ with st.sidebar:
 st.markdown("""
 <div class="main-header">
     <h1>🕊️ 톡쏘는 영성심리 AI 상담</h1>
-    <p>홍성남 신부님의 1,037개 강의를 학습한 AI가 심리·영성 상담을 도와드립니다</p>
+    <p>유튜브 채널 "홍성남 신부님의 톡쏘는 영성심리"의 영상들과 신부님의 저서들을 학습한 AI가 심리 및 영성 상담을 도와 드립니다</p>
 </div>
 """, unsafe_allow_html=True)
 
