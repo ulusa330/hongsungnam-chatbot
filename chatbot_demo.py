@@ -135,6 +135,21 @@ st.markdown("""
 .stChatInput {
     background-color: #FFFFFF !important;
 }
+/* 모바일 최적화 (50~80대 사용자 대응) */
+.stApp { font-size: 1.1rem !important; }
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] { display: none !important; }
+    .main .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
+    .main-header { padding: 1.2rem 1rem !important; border-radius: 10px !important; }
+    .main-header h1 { font-size: 1.4rem !important; }
+    .stChatMessage, .stChatMessage p { font-size: 1.15rem !important; line-height: 1.8 !important; }
+    .stButton > button { font-size: 1.1rem !important; padding: 1rem 1.2rem !important; min-height: 60px !important; border-radius: 12px !important; white-space: normal !important; background-color: #1B2B5E !important; color: white !important; border: none !important; }
+    .stChatInput textarea { font-size: 1.15rem !important; min-height: 50px !important; background-color: #FFFFFF !important; color: #1B2B5E !important; }
+    [data-testid="column"] { width: 100% !important; flex: 100% !important; min-width: 100% !important; }
+    .footer { font-size: 0.8rem !important; }
+}
+
+
 </style>
 """, unsafe_allow_html=True)
 
