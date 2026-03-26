@@ -650,6 +650,24 @@ if prompt:
                     response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
+# 상담 안내가 포함된 경우 전화 걸기 버튼 표시
+                    if '02-727-2516' in response or '상담소' in response:
+                        st.markdown("""
+                        <a href="tel:02-727-2516" target="_blank" style="
+                            display: inline-block;
+                            background: linear-gradient(135deg, #1B2B5E, #2d4a8c);
+                            color: white !important;
+                            padding: 0.8rem 1.5rem;
+                            border-radius: 12px;
+                            text-decoration: none;
+                            font-size: 1.1rem;
+                            font-weight: 600;
+                            margin: 1rem 0;
+                            box-shadow: 0 2px 8px rgba(27,43,94,0.3);
+                        ">📞 가톨릭영성심리상담소 바로 전화 걸기<br>
+                        <span style="font-size: 0.85rem; font-weight: 400;">02-727-2516 (오전 11시~오후 4시)</span></a>
+                        """, unsafe_allow_html=True)
+
                     seen_titles = set()
                     sources = []
                     for meta, sim in zip(metas, sims):
