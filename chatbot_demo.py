@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 ====================================================================
-홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v3)
+홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v4)
 ====================================================================
-[변경사항 v3]
-  - 신문 칼럼 데이터 지원 (중앙일보, 가톨릭신문, 경향신문)
-  - 검색 결과에서 유튜브/칼럼 구분 표시
-  - 시스템 프롬프트 업데이트
-  - 사이드바 통계 업데이트
+[변경사항 v4]
+  - 출처별 필터링 기능 추가
+    * 신문사 필터: 중앙일보, 가톨릭신문, 경향신문
+    * 유튜브 시리즈 필터: 맹모닝 상담소, 마태오묵상집, 요한묵상집, 10분 강의 등
+  - 질문에서 출처 키워드 자동 감지
+  - 필터 적용 시 해당 출처 내에서만 검색
 [사용법]
   1. 필수 패키지 설치:
      pip install streamlit openai numpy python-dotenv
@@ -20,6 +21,7 @@
 ====================================================================
 """
 import os
+import re
 import json
 import numpy as np
 import streamlit as st
@@ -129,6 +131,15 @@ st.markdown("""
         text-decoration: none;
         font-weight: 500;
     }
+    .filter-badge {
+        display: inline-block;
+        background: #1B2B5E;
+        color: white !important;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
     .stat-card {
         background: rgba(255,255,255,0.1);
         border-radius: 10px;
@@ -177,6 +188,130 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 # =====================================================================
+# 출처 필터링 시스템
+# =====================================================================
+# 신문사 필터 키워드
+NEWSPAPER_FILTERS = {
+    '중앙일보': ['중앙일보', '중앙'],
+    '가톨릭신문': ['가톨릭신문', '가톨릭 신문'],
+    '경향신문': ['경향신문', '경향 신문', '경향'],
+}
+# 유튜브 시리즈 필터 키워드 (제목에 포함된 패턴)
+YOUTUBE_SERIES_FILTERS = {
+    '맹모닝 상담소': ['맹모닝', '맹모닝 상담소', '맹모닝상담소'],
+    '마태오묵상집': ['마태오묵상', '마태오 묵상', '마태오묵상집'],
+    '요한묵상집': ['요한묵상', '요한 묵상', '요한묵상집'],
+    '창세기묵상집': ['창세기묵상', '창세기 묵상', '창세기묵상집'],
+    '10분 강의': ['10분 강의', '10분강의', '십분 강의'],
+    '톡쏘는 영성심리': ['톡쏘는', '영성심리'],
+    '사수영': ['사수영', '사제와 수도자', '사제와수도자'],
+    'cpbc': ['cpbc특강', 'cpbc뉴스', 'cpbc', '가톨릭 청춘어게인', '청춘어게인'],
+}
+
+# 월특강 감지 (날짜 패턴: [240101], 180609 등)
+MONTHLY_LECTURE_PATTERN = re.compile(r'\[?\d{6}\]?')
+# 일반 출처 타입 필터
+SOURCE_TYPE_FILTERS = {
+    'column': ['칼럼', '신문', '기고', '신문 칼럼', '신문칼럼'],
+    'youtube': ['유튜브', '영상', '동영상', '강의 영상'],
+}
+
+def detect_source_filter(query):
+    """질문에서 출처 필터 키워드를 감지"""
+    query_lower = query.lower().strip()
+
+    # 1. 특정 신문사 필터 감지
+    for newspaper, keywords in NEWSPAPER_FILTERS.items():
+        for kw in keywords:
+            if kw in query_lower:
+                return {
+                    'type': 'newspaper',
+                    'value': newspaper,
+                    'label': f"📰 {newspaper} 칼럼에서 검색",
+                }
+
+    # 2. 월특강 필터 감지 (날짜 패턴 + "월특강" 키워드)
+    if '월특강' in query_lower or '월 특강' in query_lower:
+        return {
+            'type': 'monthly_lecture',
+            'value': 'monthly',
+            'label': "📹 월특강에서 검색",
+        }
+
+    # 3. 유튜브 시리즈 필터 감지
+    for series, keywords in YOUTUBE_SERIES_FILTERS.items():
+        for kw in keywords:
+            if kw in query_lower:
+                return {
+                    'type': 'youtube_series',
+                    'value': series,
+                    'label': f"📹 [{series}] 시리즈에서 검색",
+                }
+
+    # 4. 일반 출처 타입 필터 감지
+    for source_type, keywords in SOURCE_TYPE_FILTERS.items():
+        for kw in keywords:
+            if kw in query_lower:
+                if source_type == 'column':
+                    return {
+                        'type': 'source_type',
+                        'value': 'column',
+                        'label': "📰 신문 칼럼에서 검색",
+                    }
+                else:
+                    return {
+                        'type': 'source_type',
+                        'value': 'youtube',
+                        'label': "📹 유튜브 영상에서 검색",
+                    }
+
+    # 필터 없음 (전체 검색)
+    return None
+
+
+def apply_filter(db, source_filter):
+    """필터 조건에 맞는 인덱스 목록 반환"""
+    if source_filter is None:
+        return None  # 전체 검색
+
+    metadata = db['metadata']
+    valid_indices = []
+
+    for i, meta in enumerate(metadata):
+        filter_type = source_filter['type']
+        filter_value = source_filter['value']
+
+        if filter_type == 'newspaper':
+            # 특정 신문사 칼럼만
+            if meta.get('source_type') == 'column':
+                newspaper = meta.get('newspaper', '')
+                if filter_value in newspaper:
+                    valid_indices.append(i)
+
+        elif filter_type == 'youtube_series':
+            # 특정 유튜브 시리즈만 (제목에 시리즈명 포함)
+            if meta.get('source_type', 'youtube') == 'youtube':
+                title = meta.get('title', '')
+                # 시리즈 키워드 목록에서 하나라도 제목에 포함되면 매칭
+                series_keywords = YOUTUBE_SERIES_FILTERS.get(filter_value, [filter_value])
+                if any(kw in title for kw in series_keywords) or filter_value in title:
+                    valid_indices.append(i)
+
+        elif filter_type == 'monthly_lecture':
+            # 월특강: 제목에 날짜 패턴(6자리 숫자)이 있는 영상
+            if meta.get('source_type', 'youtube') == 'youtube':
+                title = meta.get('title', '')
+                if MONTHLY_LECTURE_PATTERN.search(title):
+                    valid_indices.append(i)
+
+        elif filter_type == 'source_type':
+            # 유튜브 또는 칼럼 전체
+            if meta.get('source_type', 'youtube') == filter_value:
+                valid_indices.append(i)
+
+    return valid_indices
+
+# =====================================================================
 # 벡터DB 초기화 (numpy + JSON 기반)
 # =====================================================================
 VECTORDB_DIR = Path("./vectordb_홍성남신부")
@@ -224,8 +359,8 @@ def init_openai():
 def cosine_similarity(a, b):
     """코사인 유사도 계산"""
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-def search_similar(db, query, n_results=5):
-    """벡터DB에서 유사 문서 검색"""
+def search_similar(db, query, n_results=5, source_filter=None):
+    """벡터DB에서 유사 문서 검색 (필터 지원)"""
     openai_client = init_openai()
     if not openai_client or db is None:
         return None
@@ -235,21 +370,45 @@ def search_similar(db, query, n_results=5):
         input=query,
     )
     query_embedding = np.array(response.data[0].embedding)
+
+    # 필터 적용
+    filter_indices = apply_filter(db, source_filter)
+
+    if filter_indices is not None and len(filter_indices) == 0:
+        # 필터에 해당하는 데이터가 없음
+        return None
+
     # 코사인 유사도 계산
     embeddings = db['embeddings']
-    similarities = np.array([
-        cosine_similarity(query_embedding, emb)
-        for emb in embeddings
-    ])
-    # 상위 N개
-    top_indices = np.argsort(similarities)[::-1][:n_results]
+
+    if filter_indices is not None:
+        # 필터된 인덱스만 검색
+        filter_indices = np.array(filter_indices)
+        filtered_embeddings = embeddings[filter_indices]
+        similarities = np.array([
+            cosine_similarity(query_embedding, emb)
+            for emb in filtered_embeddings
+        ])
+        # 상위 N개 (필터된 인덱스 내에서)
+        top_local = np.argsort(similarities)[::-1][:n_results]
+        top_indices = filter_indices[top_local]
+        top_sims = similarities[top_local]
+    else:
+        # 전체 검색
+        similarities = np.array([
+            cosine_similarity(query_embedding, emb)
+            for emb in embeddings
+        ])
+        top_indices = np.argsort(similarities)[::-1][:n_results]
+        top_sims = similarities[top_indices]
+
     results = {
         'documents': [db['documents'][i] for i in top_indices],
         'metadatas': [db['metadata'][i] for i in top_indices],
-        'similarities': [float(similarities[i]) for i in top_indices],
+        'similarities': [float(s) for s in top_sims],
     }
     return results
-def generate_response(query, context_docs, context_metas):
+def generate_response(query, context_docs, context_metas, source_filter=None):
     """RAG 기반 응답 생성"""
     openai_client = init_openai()
     if not openai_client:
@@ -265,7 +424,14 @@ def generate_response(query, context_docs, context_metas):
             source_label = "유튜브 강의"
         context_parts.append(f"[출처 {i+1}: {title} ({source_label})]\n{doc}")
     context = "\n\n---\n\n".join(context_parts)
-    system_prompt = """당신은 홍성남 신부님의 '톡쏘는 영성심리와 맹모닝 상담소'의 강의, 상담 내용, 그리고 신부님이 신문에 기고하신 칼럼을 바탕으로 상담해 주는 AI 영성심리상담 도우미입니다.
+
+    # 필터 정보를 시스템 프롬프트에 반영
+    filter_instruction = ""
+    if source_filter:
+        filter_label = source_filter.get('label', '')
+        filter_instruction = f"\n\n[현재 검색 필터]\n사용자가 특정 출처를 지정하여 질문했습니다: {filter_label}\n제공된 컨텍스트는 해당 출처에서만 검색된 결과입니다. 답변 시 이 출처에서 찾은 내용임을 명시해 주세요."
+
+    system_prompt = f"""당신은 홍성남 신부님의 '톡쏘는 영성심리와 맹모닝 상담소'의 강의, 상담 내용, 그리고 신부님이 신문에 기고하신 칼럼을 바탕으로 상담해 주는 AI 영성심리상담 도우미입니다.
 
 [상담 안내 필수 규칙]
 사용자가 홍성남 신부님께 직접 상담을 받고 싶다고 하거나, 상담 신청 방법을 물어보면 반드시 아래 안내를 포함하세요:
@@ -274,7 +440,7 @@ def generate_response(query, context_docs, context_metas):
 3. 가톨릭영성심리상담소(02-727-2516, 오전 11시~오후 4시 상담 가능)로 연락 주시면, 전문 상담가 선생님들의 상담을 받으실 수 있도록 도와 드리고 있습니다.
 
 [역할]
-- 홍성남 신부님의 유튜브 강의와 신문 칼럼(중앙일보, 가톨릭신문, 경향신문)을 기반으로 심리·영성 관련 질문에 답변합니다.
+- 홍성남 신부님의 유튜브 강의 내용과 신문 칼럼(중앙일보, 가톨릭신문, 경향신문)을 기반으로 심리·영성 관련 질문에 답변합니다.
 - 따뜻하고 공감적인 톤으로 대화합니다.
 - 답변 시 관련 강의나 칼럼 내용을 인용하고, 출처(유튜브 강의명 또는 신문 칼럼명)를 알려줍니다.
 
@@ -285,7 +451,8 @@ def generate_response(query, context_docs, context_metas):
 4. 심각한 심리적 위기 상황이면 전문 상담 기관을 안내하세요.
 5. 답변 마지막에 참고한 출처 정보(유튜브 영상 제목 또는 신문 칼럼 제목)를 안내하세요.
 6. 한국어로 답변하세요.
-7. 출처가 신문 칼럼인 경우 "○○신문 칼럼"이라고 명시하세요."""
+7. 출처가 신문 칼럼인 경우 "○○신문 칼럼"이라고 명시하세요.
+8. 출처가 유튜브 시리즈인 경우 시리즈명(예: [맹모닝 상담소], [10분 강의] 등)을 함께 표기하세요.{filter_instruction}"""
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -456,14 +623,28 @@ if prompt:
             st.error("OpenAI API 키가 설정되지 않았습니다.")
         else:
             with st.spinner("잠시만 기다려 주세요. 토마스 형제님께서 열심히 찾고 있습니다...."):
-                results = search_similar(db, prompt, n_results=n_results)
+                # 출처 필터 감지
+                source_filter = detect_source_filter(prompt)
+
+                # 필터 적용 검색
+                results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
+
+                # 필터 결과가 없으면 전체 검색으로 폴백
+                if (results is None or not results.get('documents')) and source_filter is not None:
+                    st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
+                    source_filter = None
+                    results = search_similar(db, prompt, n_results=n_results, source_filter=None)
 
                 if results and results['documents']:
                     docs = results['documents']
                     metas = results['metadatas']
                     sims = results['similarities']
 
-                    response = generate_response(prompt, docs, metas)
+                    # 필터 배지 표시
+                    if source_filter:
+                        st.markdown(f'<span class="filter-badge">{source_filter["label"]}</span>', unsafe_allow_html=True)
+
+                    response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
                     seen_titles = set()
