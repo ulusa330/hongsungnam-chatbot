@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 ====================================================================
-홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v4)
+홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v5)
 ====================================================================
-[변경사항 v4]
-  - 출처별 필터링 기능 추가
-    * 신문사 필터: 중앙일보, 가톨릭신문, 경향신문
-    * 유튜브 시리즈 필터: 맹모닝 상담소, 마태오묵상집, 요한묵상집, 10분 강의 등
-  - 질문에서 출처 키워드 자동 감지
-  - 필터 적용 시 해당 출처 내에서만 검색
+[변경사항 v5]
+  - 홍성남 신부님 프로필·저서 정보 시스템 프롬프트에 추가
+  - 책 추천 기능 지원
+  - 전화 걸기 버튼 색상 개선 (금색)
+  - "제" 표현 제거
+  - 출처별 필터링 기능 (v4 유지)
 [사용법]
   1. 필수 패키지 설치:
      pip install streamlit openai numpy python-dotenv
@@ -210,6 +210,7 @@ YOUTUBE_SERIES_FILTERS = {
 
 # 월특강 감지 (날짜 패턴: [240101], 180609 등)
 MONTHLY_LECTURE_PATTERN = re.compile(r'\[?\d{6}\]?')
+
 # 일반 출처 타입 필터
 SOURCE_TYPE_FILTERS = {
     'column': ['칼럼', '신문', '기고', '신문 칼럼', '신문칼럼'],
@@ -230,7 +231,7 @@ def detect_source_filter(query):
                     'label': f"📰 {newspaper} 칼럼에서 검색",
                 }
 
-    # 2. 월특강 필터 감지 (날짜 패턴 + "월특강" 키워드)
+    # 2. 월특강 필터 감지
     if '월특강' in query_lower or '월 특강' in query_lower:
         return {
             'type': 'monthly_lecture',
@@ -282,30 +283,25 @@ def apply_filter(db, source_filter):
         filter_value = source_filter['value']
 
         if filter_type == 'newspaper':
-            # 특정 신문사 칼럼만
             if meta.get('source_type') == 'column':
                 newspaper = meta.get('newspaper', '')
                 if filter_value in newspaper:
                     valid_indices.append(i)
 
         elif filter_type == 'youtube_series':
-            # 특정 유튜브 시리즈만 (제목에 시리즈명 포함)
             if meta.get('source_type', 'youtube') == 'youtube':
                 title = meta.get('title', '')
-                # 시리즈 키워드 목록에서 하나라도 제목에 포함되면 매칭
                 series_keywords = YOUTUBE_SERIES_FILTERS.get(filter_value, [filter_value])
                 if any(kw in title for kw in series_keywords) or filter_value in title:
                     valid_indices.append(i)
 
         elif filter_type == 'monthly_lecture':
-            # 월특강: 제목에 날짜 패턴(6자리 숫자)이 있는 영상
             if meta.get('source_type', 'youtube') == 'youtube':
                 title = meta.get('title', '')
                 if MONTHLY_LECTURE_PATTERN.search(title):
                     valid_indices.append(i)
 
         elif filter_type == 'source_type':
-            # 유튜브 또는 칼럼 전체
             if meta.get('source_type', 'youtube') == filter_value:
                 valid_indices.append(i)
 
@@ -328,7 +324,6 @@ def init_vectordb():
         with open(METADATA_FILE, 'r', encoding='utf-8') as f:
             saved = json.load(f)
         metadata_list = saved.get('metadata', [])
-        # 통계 계산 (유튜브/칼럼 구분)
         youtube_titles = set()
         column_count = 0
         for m in metadata_list:
@@ -364,37 +359,30 @@ def search_similar(db, query, n_results=5, source_filter=None):
     openai_client = init_openai()
     if not openai_client or db is None:
         return None
-    # 쿼리 임베딩
     response = openai_client.embeddings.create(
         model="text-embedding-3-small",
         input=query,
     )
     query_embedding = np.array(response.data[0].embedding)
 
-    # 필터 적용
     filter_indices = apply_filter(db, source_filter)
 
     if filter_indices is not None and len(filter_indices) == 0:
-        # 필터에 해당하는 데이터가 없음
         return None
 
-    # 코사인 유사도 계산
     embeddings = db['embeddings']
 
     if filter_indices is not None:
-        # 필터된 인덱스만 검색
         filter_indices = np.array(filter_indices)
         filtered_embeddings = embeddings[filter_indices]
         similarities = np.array([
             cosine_similarity(query_embedding, emb)
             for emb in filtered_embeddings
         ])
-        # 상위 N개 (필터된 인덱스 내에서)
         top_local = np.argsort(similarities)[::-1][:n_results]
         top_indices = filter_indices[top_local]
         top_sims = similarities[top_local]
     else:
-        # 전체 검색
         similarities = np.array([
             cosine_similarity(query_embedding, emb)
             for emb in embeddings
@@ -425,21 +413,65 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         context_parts.append(f"[출처 {i+1}: {title} ({source_label})]\n{doc}")
     context = "\n\n---\n\n".join(context_parts)
 
-    # 필터 정보를 시스템 프롬프트에 반영
     filter_instruction = ""
     if source_filter:
         filter_label = source_filter.get('label', '')
         filter_instruction = f"\n\n[현재 검색 필터]\n사용자가 특정 출처를 지정하여 질문했습니다: {filter_label}\n제공된 컨텍스트는 해당 출처에서만 검색된 결과입니다. 답변 시 이 출처에서 찾은 내용임을 명시해 주세요."
 
-    system_prompt = f"""당신은 홍성남 신부님의 말투와 관점으로 직접 상담해 주는 AI입니다. 홍성남 신부님의 유튜브 강의, 맹모닝 상담소, 신문 칼럼의 내용을 바탕으로, 마치 신부님이 직접 대화하듯이 답변하세요.
+    system_prompt = f"""당신은 홍성남 마태오 신부의 말투와 관점으로 직접 상담해 주는 AI입니다. 홍성남 신부의 유튜브 강의, 맹모닝 상담소, 신문 칼럼의 내용을 바탕으로, 마치 신부님이 직접 대화하듯이 답변하세요.
+
+[나는 누구인가 — 홍성남 마태오 신부 프로필]
+- 이름: 홍성남 마태오
+- 소속: 천주교 서울대교구, 특수사목
+- 현 소임: 서울대교구 가톨릭영성심리상담소 소장, 영성·심리 상담과 치유 사목 중심 활동
+- 사제 서품: 1987년 2월 6일
+- 과거 소임: 잠실·명동성당 보좌, 마석·학동·상계동·가좌동 성당 주임
+- 방송: cpbc TV 「홍성남 신부의 사주풀이」, 유튜브 '톡쏘는 영성심리' 채널 메인 게스트
+- 활동: 「행복한 신앙」「기쁜 신앙」 영성 특강, '웃어야 산다' 치유·웃음 특강, 맹경순 선생님과 '맹모닝 상담소' 진행
+- 스타일: 심리 상담과 영성지도를 결합, 상처·우울·자존감 문제를 신앙 안에서 바라보도록 돕는 치유 사목. 직설적이고 현실적인 언어를 사용하면서도 하느님의 자비와 자기 수용을 강조
+
+[맹모닝 상담소 파트너 — 맹경순 베로니카]
+- 이름: 맹경순 (세례명 베로니카)
+- 출생: 1950년 9월 24일, 서울
+- 학력: 이화여자대학교 국문학과 졸업
+- 경력: 1973년 동아방송 아나운서 입사 → 1975년 동아방송 언론자유 운동(민주언론운동)으로 해직 → 프리랜서로 MBC·TBC·KBS 라디오 진행 → 1990년 가톨릭평화방송(cpbc) 아나운서 팀장 합류, 이후 아나운서부 부장·실장 역임
+- 방송: cpbc에서 「추억의 가요산책」「FM 음악공감」「성서 못자리」「신앙상담 따뜻한 동행」「맹경순의 아름다운 세상」 등 다수 프로그램 진행. 현재 유튜브 '톡쏘는 영성심리' 채널에서 홍성남 신부와 함께 '맹모닝 상담소' 진행
+- 수상: 1999년 한국방송대상 아나운서상, 2007년 대한민국아나운서대상
+- 특이사항: 1975년 동아방송 해직은 박정희 유신정권의 언론 통제에 맞선 자유언론실천선언 참여 결과. 2001년 민주화운동 관련자로 공식 인정. "자유언론은 뒷날 영광이었고, 당시는 그냥 동료를 버릴 수 없었을 뿐"이라고 회고
+- "맹경순 선생님은 누구세요?" 같은 질문에는 위 정보를 바탕으로 따뜻하게 소개하세요. 나와 함께 맹모닝 상담소를 이끌어가는 소중한 파트너라고 표현하세요.
+
+[나의 저서 — 책 추천 시 활용]
+최근·대표작:
+- 「끝까지 나를 사랑하는 마음」
+- 「나는 생각보다 괜찮은 사람」
+- 「거꾸로 보는 종교」
+- 「혼자서 마음을 치유하는 법」
+- 「내 마음이 어때서」
+- 「나로 사는 걸 깜빡했어요」
+- 「챙기고 사세요」
+
+이전부터 많이 읽힌 책:
+- 「화나면 화내고 힘들 땐 쉬어」
+- 「아! 어쩌나」 시리즈 (신앙생활 편 / 자존감 편 / 영성심리 편)
+- 「풀어야 산다」
+- 「행복을 위한 탈출」
+- 「새장 밖으로」
+
+책 추천 가이드:
+- 상처·트라우마, 자기혐오 → 「끝까지 나를 사랑하는 마음」「나는 생각보다 괜찮은 사람」「나로 사는 걸 깜빡했어요」
+- 마음이 힘들고 스스로 돌보는 법 → 「혼자서 마음을 치유하는 법」「내 마음이 어때서」
+- 화·분노 조절 → 「화나면 화내고 힘들 땐 쉬어」「풀어야 산다」
+- 신앙생활·영성심리 전반 → 「아! 어쩌나」 시리즈, 「새장 밖으로」「행복을 위한 탈출」
+- 사용자가 "책 추천해 주세요"라고 하면 고민의 유형에 맞는 책을 위 가이드에 따라 추천하세요
 
 [말투 규칙 — 매우 중요]
 - "홍성남 신부님은 ~라고 말씀하셨습니다" (X) → 제3자 시점 절대 금지
-- "~가 중요합니다", "~해 보세요", "~하는 거예요" (O) → 신부님이 직접 말하는 것처럼
+- "~가 중요합니다", "~해 보세요", "~하는 거예요" (O) → 직접 말하는 것처럼
 - 따뜻하면서도 때로는 직설적이고 톡 쏘는 어조를 섞어 주세요
 - 상대방의 아픔에 공감하면서도 현실적인 조언을 해 주세요
 - "늘 강조하는 건데요", "강의에서도 말씀드렸지만" 같은 표현을 자연스럽게 사용하세요
 - 절대 "신부님께서는", "홍성남 신부님은" 같은 3인칭 표현을 쓰지 마세요
+- "나는 누구세요?" 같은 질문에는 위 프로필 정보를 바탕으로 1인칭으로 자연스럽게 자기소개하세요
 
 [상담 안내 필수 규칙]
 사용자가 직접 상담을 받고 싶다고 하거나, 상담 신청 방법을 물어보면 반드시 아래 안내를 포함하세요:
@@ -449,13 +481,13 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 
 [규칙]
 1. 제공된 강의 및 칼럼 내용(컨텍스트)을 기반으로만 답변하세요.
-2. 컨텍스트에 없는 내용은 "이 부분은 제가 강의나 칼럼에서 직접 다루지는 않았지만..."이라고 전제하세요.
+2. 컨텍스트에 없는 내용은 "이 부분은 강의나 칼럼에서 직접 다루지는 않았지만..."이라고 전제하세요.
 3. 의학적 진단이나 처방은 절대 하지 마세요.
 4. 심각한 심리적 위기 상황이면 전문 상담 기관을 안내하세요.
 5. 답변 마지막에 참고한 출처 정보를 안내하세요.
 6. 한국어로 답변하세요.
-7. 출처가 신문 칼럼인 경우 " ○○신문에 쓴 칼럼"이라고 표현하세요.
-8. 출처가 유튜브 시리즈인 경우 " [맹모닝 상담소] 영상", " [10분 강의]" 같은 식으로 표현하세요.{filter_instruction}"""
+7. 출처가 신문 칼럼인 경우 "○○신문 칼럼"이라고 표현하세요.
+8. 출처가 유튜브 시리즈인 경우 "[맹모닝 상담소] 영상", "[10분 강의]" 같은 식으로 표현하세요.{filter_instruction}"""
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -585,7 +617,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🙋" if message["role"] == "user" else "🕊️"):
         st.markdown(message["content"])
         if message["role"] == "assistant" and "sources" in message:
-            with st.expander("📚 관련 자료", expanded=False):
+            with st.expander("📚 참고 자료", expanded=False):
                 for src in message["sources"]:
                     source_type = src.get('source_type', 'youtube')
                     if source_type == 'column':
@@ -625,7 +657,7 @@ if prompt:
         elif not openai_client:
             st.error("OpenAI API 키가 설정되지 않았습니다.")
         else:
-            with st.spinner("잠시만 기다려 주세요. 토마스 형제가 열심히 찾고 있습니다...."):
+            with st.spinner("잠시만 기다려 주세요. 토마스 형제님께서 열심히 찾고 있습니다...."):
                 # 출처 필터 감지
                 source_filter = detect_source_filter(prompt)
 
@@ -650,20 +682,20 @@ if prompt:
                     response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
-# 상담 안내가 포함된 경우 전화 걸기 버튼 표시
+                    # 상담 안내가 포함된 경우 전화 걸기 버튼 표시
                     if '02-727-2516' in response or '상담소' in response:
                         st.markdown("""
                         <a href="tel:02-727-2516" target="_blank" style="
                             display: inline-block;
-                           background: linear-gradient(135deg, #C9A84C, #e0b84a);
-			   color: #1B2B5E !important;
+                            background: linear-gradient(135deg, #C9A84C, #e0b84a);
+                            color: #1B2B5E !important;
                             padding: 0.8rem 1.5rem;
                             border-radius: 12px;
                             text-decoration: none;
                             font-size: 1.1rem;
                             font-weight: 600;
                             margin: 1rem 0;
-                            box-shadow: 0 2px 8px rgba(27,43,94,0.3);
+                            box-shadow: 0 2px 8px rgba(201,168,76,0.4);
                         ">📞 가톨릭영성심리상담소 바로 전화 걸기<br>
                         <span style="font-size: 0.85rem; font-weight: 400;">02-727-2516 (오전 11시~오후 4시)</span></a>
                         """, unsafe_allow_html=True)
