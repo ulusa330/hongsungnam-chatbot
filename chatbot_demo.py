@@ -28,6 +28,121 @@ import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
+
+# =====================================================================
+# 강의 일정 로드
+# =====================================================================
+SCHEDULE_FILE = Path(__file__).parent / "schedule.json"
+
+def load_schedule():
+    """schedule.json에서 일정 데이터를 로드"""
+    try:
+        with open(SCHEDULE_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {
+            "next_lecture": {"status": "unconfirmed"},
+            "regular_schedule": {
+                "pattern": "매월 셋째 주 토요일",
+                "time": "오후 3시",
+                "location": "가톨릭회관",
+                "contact": "776-8405"
+            }
+        }
+
+SCHEDULE = load_schedule()
+
+def get_schedule_card_html():
+    """초기 화면에 표시할 일정 카드 HTML 생성"""
+    lecture = SCHEDULE.get("next_lecture", {})
+    regular = SCHEDULE.get("regular_schedule", {})
+
+    if lecture.get("status") == "confirmed":
+        date = lecture.get("date", "")
+        year = date[:4] if date else ""
+        month = str(int(date[5:7])) if date else ""
+        day = str(int(date[8:10])) if date else ""
+        dow = lecture.get("day_of_week", "")
+        t_start = lecture.get("time_start", "")
+        t_end = lecture.get("time_end", "")
+        # 시간 포맷
+        h_start = int(t_start.split(":")[0]) if t_start else 0
+        period_start = "오후" if h_start >= 12 else "오전"
+        h_start_12 = h_start - 12 if h_start > 12 else h_start
+        h_end = int(t_end.split(":")[0]) if t_end else 0
+        period_end = "오후" if h_end >= 12 else "오전"
+        h_end_12 = h_end - 12 if h_end > 12 else h_end
+        time_str = f"{period_start} {h_start_12}시~{h_end_12}시"
+
+        location = lecture.get("location", "")
+        fee = lecture.get("fee", "")
+        contact = lecture.get("contact", "")
+        title = lecture.get("title", "영성심리특강")
+        note = lecture.get("note", "")
+
+        fee_text = f"회비 {fee}" if fee else ""
+        contact_text = f"문의 {contact}" if contact else ""
+        detail_parts = [p for p in [fee_text, contact_text] if p]
+        detail_line = " | ".join(detail_parts)
+        note_line = f'<div style="margin-top:0.4rem;font-size:0.85rem;color:#c9d4e8;">{note}</div>' if note else ""
+
+        return f"""
+        <div style="background:linear-gradient(135deg,#1B2B5E 0%,#2d4a8c 100%);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border-left:4px solid #C9A84C;box-shadow:0 2px 12px rgba(27,43,94,0.3);">
+            <div style="color:#C9A84C;font-weight:700;font-size:1.05rem;margin-bottom:0.4rem;">📅 {year}년 {month}월 {title} 안내</div>
+            <div style="color:white;font-size:0.95rem;">{month}월 {day}일({dow}) {time_str} | {location}</div>
+            <div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">{detail_line}</div>
+            {note_line}
+        </div>
+        """
+    else:
+        pattern = regular.get("pattern", "매월 셋째 주 토요일")
+        time = regular.get("time", "오후 3시")
+        location = regular.get("location", "가톨릭회관")
+        return f"""
+        <div style="background:linear-gradient(135deg,#1B2B5E 0%,#2d4a8c 100%);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border-left:4px solid #C9A84C;box-shadow:0 2px 12px rgba(27,43,94,0.3);">
+            <div style="color:#C9A84C;font-weight:700;font-size:1.05rem;margin-bottom:0.4rem;">📅 다음 정기특강 안내</div>
+            <div style="color:white;font-size:0.95rem;">{pattern} {time} | {location}</div>
+            <div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">확정 일정은 추후 공지됩니다</div>
+        </div>
+        """
+
+def get_schedule_prompt_text():
+    """시스템 프롬프트에 삽입할 일정 텍스트 생성"""
+    lecture = SCHEDULE.get("next_lecture", {})
+    regular = SCHEDULE.get("regular_schedule", {})
+
+    if lecture.get("status") == "confirmed":
+        date = lecture.get("date", "")
+        year = date[:4] if date else ""
+        month = str(int(date[5:7])) if date else ""
+        day = str(int(date[8:10])) if date else ""
+        dow = lecture.get("day_of_week", "")
+        t_start = lecture.get("time_start", "")
+        t_end = lecture.get("time_end", "")
+        h_start = int(t_start.split(":")[0]) if t_start else 0
+        period_start = "오후" if h_start >= 12 else "오전"
+        h_start_12 = h_start - 12 if h_start > 12 else h_start
+        h_end = int(t_end.split(":")[0]) if t_end else 0
+        period_end = "오후" if h_end >= 12 else "오전"
+        h_end_12 = h_end - 12 if h_end > 12 else h_end
+        time_str = f"{period_start} {h_start_12}시~{h_end_12}시"
+        location = lecture.get("location", "")
+        fee = lecture.get("fee", "")
+        contact = lecture.get("contact", "")
+        title = lecture.get("title", "영성심리특강")
+        return (
+            f"다음 {title} 일정: {year}년 {month}월 {day}일({dow}) {time_str}, "
+            f"{location}. 회비 {fee}. 문의 {contact}."
+        )
+    else:
+        pattern = regular.get("pattern", "매월 셋째 주 토요일")
+        time = regular.get("time", "오후 3시")
+        location = regular.get("location", "가톨릭회관")
+        contact = regular.get("contact", "776-8405")
+        return (
+            f"{pattern} {time}, {location}에서 정기특강을 진행합니다만, "
+            f"아직 확정된 일정이 없습니다. {contact}로 문의해 주세요."
+        )
 # =====================================================================
 # 페이지 설정
 # =====================================================================
@@ -439,6 +554,13 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         filter_label = source_filter.get('label', '')
         filter_instruction = f"\n\n[현재 검색 필터]\n사용자가 특정 출처를 지정하여 질문했습니다: {filter_label}\n제공된 컨텍스트는 해당 출처에서만 검색된 결과입니다. 답변 시 이 출처에서 찾은 내용임을 명시해 주세요."
 
+    # 일정 키워드 감지 시 시스템 프롬프트에 일정 정보 추가
+    schedule_instruction = ""
+    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강']
+    if any(kw in query for kw in schedule_keywords):
+        schedule_text = get_schedule_prompt_text()
+        schedule_instruction = f"\n\n[강의 일정 정보]\n{schedule_text}\n사용자가 일정에 대해 물었으므로 위 정보를 참고하여 안내해 주세요."
+
     system_prompt = f"""당신은 홍성남 마태오 신부의 말투와 관점으로 직접 상담해 주는 AI입니다. 홍성남 신부의 유튜브 강의, 맹모닝 상담소, 신문 칼럼의 내용을 바탕으로, 마치 신부님이 직접 대화하듯이 답변하세요.
 
 [나는 누구인가 — 홍성남 마태오 신부 프로필]
@@ -520,7 +642,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 5. 답변 마지막에 참고한 출처 정보를 안내하세요.
 6. 한국어로 답변하세요.
 7. 출처가 신문 칼럼인 경우 "○○신문 칼럼"이라고 표현하세요.
-8. 출처가 유튜브 시리즈인 경우 "[맹모닝 상담소] 영상", "[10분 강의]" 같은 식으로 표현하세요.{filter_instruction}"""
+8. 출처가 유튜브 시리즈인 경우 "[맹모닝 상담소] 영상", "[10분 강의]" 같은 식으로 표현하세요.{filter_instruction}{schedule_instruction}"""
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -628,6 +750,7 @@ if "messages" not in st.session_state:
 
 # 예시 질문
 if not st.session_state.messages:
+    st.markdown(get_schedule_card_html(), unsafe_allow_html=True)
     st.markdown("#### 💬 이런 질문을 해보세요")
     col1, col2 = st.columns(2)
     example_questions = [
