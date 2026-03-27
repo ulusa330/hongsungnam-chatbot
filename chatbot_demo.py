@@ -173,16 +173,23 @@ st.markdown("""
 }
 
  /* Streamlit 하단 배지 및 관리 버튼 숨기기 */
-    footer {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {display: none;}
-    [data-testid="stToolbar"] {display: none;}
-    [data-testid="stDecoration"] {display: none;}
-    [data-testid="stStatusWidget"] {display: none;}
-    [data-testid="manage-app-button"] {display: none;}
-    .viewerBadge_container__r5tak {display: none;}
-    .stAppDeployButton {display: none;}
+    footer {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
+    header {visibility: hidden !important;}
+    .stDeployButton {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    [data-testid="manage-app-button"] {display: none !important;}
+    .viewerBadge_container__r5tak {display: none !important;}
+    .stAppDeployButton {display: none !important;}
+    a[href="https://streamlit.io"] {display: none !important;}
+    iframe[title="streamlit_badge"] {display: none !important;}
+    [data-testid="stAppViewBlockContainer"] + div {display: none !important;}
+    .reportview-container .main footer {display: none !important;}
+    div[class*="viewerBadge"] {display: none !important;}
+    div[class*="stStreamlitBadge"] {display: none !important;}
+    section[data-testid="stSidebar"] + div + footer {display: none !important;}
 
 
 /* 모바일 최적화 (50~80대 사용자 대응) */
