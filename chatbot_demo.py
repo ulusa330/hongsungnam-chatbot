@@ -171,6 +171,20 @@ st.markdown("""
 .stChatInput {
     background-color: #FFFFFF !important;
 }
+
+ /* Streamlit 하단 배지 및 관리 버튼 숨기기 */
+    footer {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display: none;}
+    [data-testid="stToolbar"] {display: none;}
+    [data-testid="stDecoration"] {display: none;}
+    [data-testid="stStatusWidget"] {display: none;}
+    [data-testid="manage-app-button"] {display: none;}
+    .viewerBadge_container__r5tak {display: none;}
+    .stAppDeployButton {display: none;}
+
+
 /* 모바일 최적화 (50~80대 사용자 대응) */
 .stApp { font-size: 1.1rem !important; }
 @media (max-width: 768px) {
