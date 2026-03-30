@@ -559,7 +559,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
     """RAG 기반 응답 생성"""
     openai_client = init_openai()
     if not openai_client:
-    return "OpenAI API 키가 설정되지 않았습니다."
+        return "OpenAI API 키가 설정되지 않았습니다."
     # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함
     if is_schedule_query:
         schedule_text = get_schedule_prompt_text()
