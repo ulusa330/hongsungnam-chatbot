@@ -920,7 +920,11 @@ if prompt:
                                 source_info['newspaper'] = meta.get('newspaper', '신문')
                             sources.append(source_info)
 
+                schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강', '몇월', '몇 월']
+                          is_schedule_query = any(kw in prompt for kw in schedule_keywords)
+                          if not is_schedule_query:
                     with st.expander("📚 참고 자료", expanded=True):
+                    
                         for src in sources:
                             source_type = src.get('source_type', 'youtube')
                             if source_type == 'column':
