@@ -105,9 +105,11 @@ def get_schedule_card_html():
             <div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">확정 일정은 추후 공지됩니다</div>
         </div>
         """
-
 def get_schedule_prompt_text():
     """시스템 프롬프트에 삽입할 일정 텍스트 생성"""
+    from datetime import date as dt_date
+    today = dt_date.today()
+
     lecture = SCHEDULE.get("next_lecture", {})
     regular = SCHEDULE.get("regular_schedule", {})
 
@@ -123,17 +125,46 @@ def get_schedule_prompt_text():
         period_start = "오후" if h_start >= 12 else "오전"
         h_start_12 = h_start - 12 if h_start > 12 else h_start
         h_end = int(t_end.split(":")[0]) if t_end else 0
-        period_end = "오후" if h_end >= 12 else "오전"
         h_end_12 = h_end - 12 if h_end > 12 else h_end
         time_str = f"{period_start} {h_start_12}시~{h_end_12}시"
         location = lecture.get("location", "")
         fee = lecture.get("fee", "")
         contact = lecture.get("contact", "")
         title = lecture.get("title", "영성심리특강")
+
+        try:
+            lecture_date = dt_date(int(year), int(month), int(day))
+        except Exception:
+            lecture_date = None
+
+        if lecture_date and today > lecture_date:
+            return (
+                f"[강의 일정 규칙] "
+                f"아쉽게도 {month}월 {title}은 이미 종료되었습니다. "
+                f"다음 달 강의 일정은 아직 등록되지 않았습니다. 문의: {contact}. "
+                f"중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것. "
+                f"사용자가 직접 과거 일정을 물어볼 때만 과거 내용을 참고할 것."
+            )
+        else:
+            return (
+                f"[강의 일정 규칙] "
+                f"다음 {title}: {year}년 {month}월 {day}일({dow}) {time_str}, "
+                f"{location}. 회비 {fee}. 문의 {contact}. "
+                f"중요: 과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것."
+            )
+    else:
+        pattern = regular.get("pattern", "매월 셋째 주 토요일")
+        time = regular.get("time", "오후 3시")
+        location = regular.get("location", "가톨릭회관")
+        contact = regular.get("contact", "776-8405")
         return (
-            f"다음 {title} 일정: {year}년 {month}월 {day}일({dow}) {time_str}, "
-            f"{location}. 회비 {fee}. 문의 {contact}."
+            f"[강의 일정 규칙] "
+            f"현재 확정된 강의 일정이 없습니다. "
+            f"정기적으로 {pattern} {time}, {location}에서 진행되나 "
+            f"다음 일정은 아직 나오지 않았습니다. 문의: {contact}. "
+            f"중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것."
         )
+
     else:
         pattern = regular.get("pattern", "매월 셋째 주 토요일")
         time = regular.get("time", "오후 3시")
