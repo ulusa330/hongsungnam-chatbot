@@ -557,14 +557,16 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
     is_schedule_query = any(kw in query for kw in SCHEDULE_KEYWORDS)
     if is_schedule_query:
         schedule_text = get_schedule_prompt_text()
-        return (schedule_text
-                .replace("[강의 일정 규칙] ", "")
-                .replace("중요: ", "")
-                .replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
-                .replace("과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것.", "")
-                .replace("사용자가 직접 과거 일정을 물어볼 때만 과거 내용을 참고할 것.", "")
-                .strip())
-
+        schedule_response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요.\n\n{schedule_text}"},
+                {"role": "user", "content": query}
+            ],
+            temperature=0.5,
+            max_tokens=500,
+        )
+        return schedule_response.choices[0].message.content
     context_parts = []
     for i, (doc, meta) in enumerate(zip(context_docs, context_metas)):
         title = meta.get('title', '제목 미상')
