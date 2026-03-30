@@ -165,15 +165,7 @@ def get_schedule_prompt_text():
             f"중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것."
         )
 
-    else:
-        pattern = regular.get("pattern", "매월 셋째 주 토요일")
-        time = regular.get("time", "오후 3시")
-        location = regular.get("location", "가톨릭회관")
-        contact = regular.get("contact", "776-8405")
-        return (
-            f"{pattern} {time}, {location}에서 정기특강을 진행합니다만, "
-            f"아직 확정된 일정이 없습니다. {contact}로 문의해 주세요."
-        )
+
 # =====================================================================
 # 페이지 설정
 # =====================================================================
