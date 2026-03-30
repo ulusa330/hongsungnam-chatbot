@@ -819,25 +819,25 @@ for message in st.session_state.messages:
         if message["role"] == "assistant" and "sources" in message:
             if not message.get("is_schedule", False):
                 with st.expander("📚 참고 자료", expanded=False):
-                for src in message["sources"]:
-                    source_type = src.get('source_type', 'youtube')
-                    if source_type == 'column':
-                        newspaper = src.get('newspaper', '신문')
-                        st.markdown(f"""
-                        <div class="source-card-column">
-                            <div class="title">📰 {src['title']}</div>
-                            <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp; {newspaper} &nbsp;|&nbsp;
-                            <a href="{src.get('url', '#')}" target="_blank">🔗 칼럼 보기</a></div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown(f"""
-                        <div class="source-card">
-                            <div class="title">📹 {src['title']}</div>
-                            <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp;
-                            <a href="{src.get('url', '#')}" target="_blank">🔗 영상 보기</a></div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    for src in message["sources"]:
+                        source_type = src.get('source_type', 'youtube')
+                        if source_type == 'column':
+                            newspaper = src.get('newspaper', '신문')
+                            st.markdown(f"""
+                            <div class="source-card-column">
+                                <div class="title">📰 {src['title']}</div>
+                                <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp; {newspaper} &nbsp;|&nbsp;
+                                <a href="{src.get('url', '#')}" target="_blank">🔗 칼럼 보기</a></div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"""
+                            <div class="source-card">
+                                <div class="title">📹 {src['title']}</div>
+                                <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp;
+                                <a href="{src.get('url', '#')}" target="_blank">🔗 영상 보기</a></div>
+                            </div>
+                            """, unsafe_allow_html=True)
 
 # =====================================================================
 # 채팅 입력 처리
