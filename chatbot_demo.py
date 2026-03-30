@@ -673,7 +673,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 7. 출처가 신문 칼럼인 경우 "○○신문 칼럼"이라고 표현하세요.
 8. 출처가 유튜브 시리즈인 경우 "[맹모닝 상담소] 영상", "[10분 강의]" 같은 식으로 표현하세요.
 9. 강의 일정 질문 시 schedule.json 정보만 사용하고, VectorDB의 과거 영상·자막에 언급된 날짜는 절대 일정으로 안내하지 말 것. 사용자가 직접 과거 일정을 물어볼 때만 과거 내용 참고 가능.
-10. 10. 강의 일정 안내 및 상담소 위치·연락처 안내 시 출처 카드나 참고 자료를 절대 표시하지 말 것. 이 경우 출처 표시는 매우 잘못된 것임.{filter_instruction}{schedule_instruction}"""
+10. 강의 일정 안내 및 상담소 위치·연락처 안내 시 출처 카드나 참고 자료를 절대 표시하지 말 것. 이 경우 출처 표시는 매우 잘못된 것임.{filter_instruction}{schedule_instruction}"""
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": f"""질문: {query}
