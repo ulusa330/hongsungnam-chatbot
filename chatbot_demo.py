@@ -556,7 +556,7 @@ def search_similar(db, query, n_results=5, source_filter=None):
     }
     return results
 def generate_response(query, context_docs, context_metas, source_filter=None):
-"""RAG 기반 응답 생성"""
+    """RAG 기반 응답 생성"""
     openai_client = init_openai()
     if not openai_client:
         return "OpenAI API 키가 설정되지 않았습니다."
