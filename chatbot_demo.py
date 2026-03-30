@@ -562,7 +562,8 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         return "OpenAI API 키가 설정되지 않았습니다."
     # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함
     if is_schedule_query:
-schedule_text = get_schedule_prompt_text()
+if is_schedule_query:
+        schedule_text = get_schedule_prompt_text()
         return schedule_text.replace("[강의 일정 규칙] ", "").replace("중요: ", "").replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
     context_parts = []
     for i, (doc, meta) in enumerate(zip(context_docs, context_metas)):
