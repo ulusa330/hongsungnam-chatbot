@@ -561,6 +561,13 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
     if not openai_client:
         return "OpenAI API 키가 설정되지 않았습니다."
     # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함
+    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강', '몇월', '몇 월']
+    is_schedule_query = any(kw in query for kw in schedule_keywords)
+    if is_schedule_query:
+        schedule_text = get_schedule_prompt_text()
+        return schedule_text.replace("[강의 일정 규칙] ", "").replace("중요: ", "").replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
+    context_parts = []
+    # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함
     if is_schedule_query:
         schedule_text = get_schedule_prompt_text()
         return schedule_text.replace("[강의 일정 규칙] ", "").replace("중요: ", "").replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
