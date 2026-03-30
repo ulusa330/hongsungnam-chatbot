@@ -579,10 +579,11 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 
     # 일정 키워드 감지 시 시스템 프롬프트에 일정 정보 추가
     schedule_instruction = ""
-    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강']
-    if any(kw in query for kw in schedule_keywords):
+    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강', '몇월', '몇 월']
+    is_schedule_query = any(kw in query for kw in schedule_keywords)
+    if is_schedule_query:
         schedule_text = get_schedule_prompt_text()
-        schedule_instruction = f"\n\n[강의 일정 정보]\n{schedule_text}\n사용자가 일정에 대해 물었으므로 위 정보를 참고하여 안내해 주세요."
+        schedule_instruction = f"\n\n[강의 일정 정보 — 매우 중요]\n{schedule_text}\n경고: 이 질문은 강의 일정에 관한 것입니다. 반드시 위 일정 정보만 사용하세요. VectorDB에서 검색된 과거 영상 속 날짜나 장소는 절대 일정으로 안내하지 마세요. 출처나 참고 자료도 표시하지 마세요."
 
     system_prompt = f"""당신은 홍성남 마태오 신부의 말투와 관점으로 직접 상담해 주는 AI입니다. 홍성남 신부의 유튜브 강의, 맹모닝 상담소, 신문 칼럼의 내용을 바탕으로, 마치 신부님이 직접 대화하듯이 답변하세요.
 
