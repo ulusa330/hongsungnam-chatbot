@@ -817,7 +817,8 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🙋" if message["role"] == "user" else "🕊️"):
         st.markdown(message["content"])
         if message["role"] == "assistant" and "sources" in message:
-            with st.expander("📚 참고 자료", expanded=False):
+            if not message.get("is_schedule", False):
+                with st.expander("📚 참고 자료", expanded=False):
                 for src in message["sources"]:
                     source_type = src.get('source_type', 'youtube')
                     if source_type == 'column':
@@ -940,10 +941,11 @@ if prompt:
                                 </div>
                                 """, unsafe_allow_html=True)
 
-                    st.session_state.messages.append({
+                  st.session_state.messages.append({
                         "role": "assistant",
                         "content": response,
                         "sources": sources,
+                        "is_schedule": is_schedule_query,
                     })
                 else:
                     fallback = "죄송합니다. 관련 내용을 찾지 못했습니다. 다른 방식으로 질문해 보시겠어요?"
