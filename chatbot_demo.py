@@ -65,7 +65,6 @@ def get_schedule_card_html():
         dow = lecture.get("day_of_week", "")
         t_start = lecture.get("time_start", "")
         t_end = lecture.get("time_end", "")
-        # 시간 포맷
         h_start = int(t_start.split(":")[0]) if t_start else 0
         period_start = "오후" if h_start >= 12 else "오전"
         h_start_12 = h_start - 12 if h_start > 12 else h_start
@@ -105,6 +104,7 @@ def get_schedule_card_html():
             <div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">확정 일정은 추후 공지됩니다</div>
         </div>
         """
+
 def get_schedule_prompt_text():
     """시스템 프롬프트에 삽입할 일정 텍스트 생성"""
     from datetime import date as dt_date
@@ -175,6 +175,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
 # =====================================================================
 # 커스텀 CSS
 # =====================================================================
@@ -302,15 +303,13 @@ st.markdown("""
         border-top: 1px solid #e0e0e0;
         margin-top: 2rem;
     }
-  .stTextInput input, .stChatInput textarea {
-    background-color: #FFFFFF !important;
-    color: #1B2B5E !important;
-}
-.stChatInput {
-    background-color: #FFFFFF !important;
-}
-
- /* Streamlit 하단 배지 및 관리 버튼 숨기기 */
+    .stTextInput input, .stChatInput textarea {
+        background-color: #FFFFFF !important;
+        color: #1B2B5E !important;
+    }
+    .stChatInput {
+        background-color: #FFFFFF !important;
+    }
     footer {visibility: hidden !important;}
     #MainMenu {visibility: hidden !important;}
     header {visibility: hidden !important;}
@@ -329,33 +328,30 @@ st.markdown("""
     div[class*="stStreamlitBadge"] {display: none !important;}
     section[data-testid="stSidebar"] + div + footer {display: none !important;}
 
-
-/* 모바일 최적화 (50~80대 사용자 대응) */
-.stApp { font-size: 1.1rem !important; }
-@media (max-width: 768px) {
-    [data-testid="stSidebar"] { display: none !important; }
-    .main .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
-    .main-header { padding: 1.2rem 1rem !important; border-radius: 10px !important; margin-bottom: 0.5rem !important; }
-    .main-header h1 { font-size: 1.4rem !important; }
-    h4 { font-size: 1.1rem !important; margin-top: 0 !important; }
-    .stChatMessage, .stChatMessage p { font-size: 1.15rem !important; line-height: 1.8 !important; }
-    .stButton > button { font-size: 1.1rem !important; padding: 1rem 1.2rem !important; min-height: 60px !important; border-radius: 12px !important; white-space: normal !important; background-color: #1B2B5E !important; color: white !important; border: none !important; }
-    .stChatInput textarea { font-size: 1.15rem !important; min-height: 50px !important; background-color: #FFFFFF !important; color: #1B2B5E !important; }
-    [data-testid="column"] { width: 100% !important; flex: 100% !important; min-width: 100% !important; }
-    .footer { font-size: 0.8rem !important; }
-}
+    .stApp { font-size: 1.1rem !important; }
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] { display: none !important; }
+        .main .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
+        .main-header { padding: 1.2rem 1rem !important; border-radius: 10px !important; margin-bottom: 0.5rem !important; }
+        .main-header h1 { font-size: 1.4rem !important; }
+        h4 { font-size: 1.1rem !important; margin-top: 0 !important; }
+        .stChatMessage, .stChatMessage p { font-size: 1.15rem !important; line-height: 1.8 !important; }
+        .stButton > button { font-size: 1.1rem !important; padding: 1rem 1.2rem !important; min-height: 60px !important; border-radius: 12px !important; white-space: normal !important; background-color: #1B2B5E !important; color: white !important; border: none !important; }
+        .stChatInput textarea { font-size: 1.15rem !important; min-height: 50px !important; background-color: #FFFFFF !important; color: #1B2B5E !important; }
+        [data-testid="column"] { width: 100% !important; flex: 100% !important; min-width: 100% !important; }
+        .footer { font-size: 0.8rem !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
+
 # =====================================================================
 # 출처 필터링 시스템
 # =====================================================================
-# 신문사 필터 키워드
 NEWSPAPER_FILTERS = {
     '중앙일보': ['중앙일보', '중앙'],
     '가톨릭신문': ['가톨릭신문', '가톨릭 신문'],
     '경향신문': ['경향신문', '경향 신문', '경향'],
 }
-# 유튜브 시리즈 필터 키워드 (제목에 포함된 패턴)
 YOUTUBE_SERIES_FILTERS = {
     '맹모닝 상담소': ['맹모닝', '맹모닝 상담소', '맹모닝상담소'],
     '마태오묵상집': ['마태오묵상', '마태오 묵상', '마태오묵상집'],
@@ -366,21 +362,19 @@ YOUTUBE_SERIES_FILTERS = {
     '사수영': ['사수영', '사제와 수도자', '사제와수도자'],
     'cpbc': ['cpbc특강', 'cpbc뉴스', 'cpbc', '가톨릭 청춘어게인', '청춘어게인'],
 }
-
-# 월특강 감지 (날짜 패턴: [240101], 180609 등)
 MONTHLY_LECTURE_PATTERN = re.compile(r'\[?\d{6}\]?')
-
-# 일반 출처 타입 필터
 SOURCE_TYPE_FILTERS = {
     'column': ['칼럼', '신문', '기고', '신문 칼럼', '신문칼럼'],
     'youtube': ['유튜브', '영상', '동영상', '강의 영상'],
 }
+
+SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '언제', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강', '특강', '일정']
+
 def detect_source_filter(query):
     """질문에서 출처 필터 키워드를 감지"""
     query_lower = query.lower().strip()
     # 일정 관련 질문이면 소스 필터 적용 안 함
-    schedule_keywords = ['강의 일정', '특강 일정', '언제', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강']
-    if any(kw in query for kw in schedule_keywords):
+    if any(kw in query for kw in SCHEDULE_KEYWORDS):
         return None
     # 1. 특정 신문사 필터 감지
     for newspaper, keywords in NEWSPAPER_FILTERS.items():
@@ -391,7 +385,6 @@ def detect_source_filter(query):
                     'value': newspaper,
                     'label': f"📰 {newspaper} 칼럼에서 검색",
                 }
-
     # 2. 월특강 필터 감지
     if '월특강' in query_lower or '월 특강' in query_lower:
         return {
@@ -399,7 +392,6 @@ def detect_source_filter(query):
             'value': 'monthly',
             'label': "📹 월특강에서 검색",
         }
-
     # 3. 유튜브 시리즈 필터 감지
     for series, keywords in YOUTUBE_SERIES_FILTERS.items():
         for kw in keywords:
@@ -409,7 +401,6 @@ def detect_source_filter(query):
                     'value': series,
                     'label': f"📹 [{series}] 시리즈에서 검색",
                 }
-
     # 4. 일반 출처 타입 필터 감지
     for source_type, keywords in SOURCE_TYPE_FILTERS.items():
         for kw in keywords:
@@ -426,15 +417,13 @@ def detect_source_filter(query):
                         'value': 'youtube',
                         'label': "📹 유튜브 영상에서 검색",
                     }
-
-    # 필터 없음 (전체 검색)
     return None
 
 
 def apply_filter(db, source_filter):
     """필터 조건에 맞는 인덱스 목록 반환"""
     if source_filter is None:
-        return None  # 전체 검색
+        return None
 
     metadata = db['metadata']
     valid_indices = []
@@ -468,12 +457,14 @@ def apply_filter(db, source_filter):
 
     return valid_indices
 
+
 # =====================================================================
-# 벡터DB 초기화 (numpy + JSON 기반)
+# 벡터DB 초기화
 # =====================================================================
 VECTORDB_DIR = Path("./vectordb_홍성남신부")
 EMBEDDINGS_FILE = VECTORDB_DIR / "embeddings.npz"
 METADATA_FILE = VECTORDB_DIR / "metadata.json"
+
 @st.cache_resource
 def init_vectordb():
     """벡터DB 로드 (numpy + JSON)"""
@@ -504,6 +495,7 @@ def init_vectordb():
     except Exception as e:
         st.error(f"벡터DB 로드 오류: {e}")
         return None
+
 @st.cache_resource
 def init_openai():
     """OpenAI 클라이언트 초기화"""
@@ -512,9 +504,10 @@ def init_openai():
     if not api_key:
         return None
     return openai.OpenAI(api_key=api_key)
+
 def cosine_similarity(a, b):
-    """코사인 유사도 계산"""
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
 def search_similar(db, query, n_results=5, source_filter=None):
     """벡터DB에서 유사 문서 검색 (필터 지원)"""
     openai_client = init_openai()
@@ -525,14 +518,10 @@ def search_similar(db, query, n_results=5, source_filter=None):
         input=query,
     )
     query_embedding = np.array(response.data[0].embedding)
-
     filter_indices = apply_filter(db, source_filter)
-
     if filter_indices is not None and len(filter_indices) == 0:
         return None
-
     embeddings = db['embeddings']
-
     if filter_indices is not None:
         filter_indices = np.array(filter_indices)
         filtered_embeddings = embeddings[filter_indices]
@@ -550,31 +539,33 @@ def search_similar(db, query, n_results=5, source_filter=None):
         ])
         top_indices = np.argsort(similarities)[::-1][:n_results]
         top_sims = similarities[top_indices]
-
     results = {
         'documents': [db['documents'][i] for i in top_indices],
         'metadatas': [db['metadata'][i] for i in top_indices],
         'similarities': [float(s) for s in top_sims],
     }
     return results
+
+
 def generate_response(query, context_docs, context_metas, source_filter=None):
     """RAG 기반 응답 생성"""
     openai_client = init_openai()
     if not openai_client:
         return "OpenAI API 키가 설정되지 않았습니다."
-    # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함
-    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강', '몇월', '몇 월']
-    is_schedule_query = any(kw in query for kw in schedule_keywords)
+
+    # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함 — schedule.json만 사용
+    is_schedule_query = any(kw in query for kw in SCHEDULE_KEYWORDS)
     if is_schedule_query:
         schedule_text = get_schedule_prompt_text()
-        return schedule_text.replace("[강의 일정 규칙] ", "").replace("중요: ", "").replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
+        return (schedule_text
+                .replace("[강의 일정 규칙] ", "")
+                .replace("중요: ", "")
+                .replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
+                .replace("과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것.", "")
+                .replace("사용자가 직접 과거 일정을 물어볼 때만 과거 내용을 참고할 것.", "")
+                .strip())
+
     context_parts = []
-    # 일정 관련 질문이면 VectorDB 컨텍스트 사용 안 함
-    if is_schedule_query:
-        schedule_text = get_schedule_prompt_text()
-        return schedule_text.replace("[강의 일정 규칙] ", "").replace("중요: ", "").replace("과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.", "")
-    context_parts = []
-    
     for i, (doc, meta) in enumerate(zip(context_docs, context_metas)):
         title = meta.get('title', '제목 미상')
         source_type = meta.get('source_type', 'youtube')
@@ -585,18 +576,13 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
             source_label = "유튜브 강의"
         context_parts.append(f"[출처 {i+1}: {title} ({source_label})]\n{doc}")
     context = "\n\n---\n\n".join(context_parts)
+
     filter_instruction = ""
     if source_filter:
         filter_label = source_filter.get('label', '')
         filter_instruction = f"\n\n[현재 검색 필터]\n사용자가 특정 출처를 지정하여 질문했습니다: {filter_label}\n제공된 컨텍스트는 해당 출처에서만 검색된 결과입니다. 답변 시 이 출처에서 찾은 내용임을 명시해 주세요."
 
-    # 일정 키워드 감지 시 시스템 프롬프트에 일정 정보 추가
     schedule_instruction = ""
-    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강', '몇월', '몇 월']
-    is_schedule_query = any(kw in query for kw in schedule_keywords)
-    if is_schedule_query:
-        schedule_text = get_schedule_prompt_text()
-        schedule_instruction = f"\n\n[강의 일정 정보 — 매우 중요]\n{schedule_text}\n경고: 이 질문은 강의 일정에 관한 것입니다. 반드시 위 일정 정보만 사용하세요. VectorDB에서 검색된 과거 영상 속 날짜나 장소는 절대 일정으로 안내하지 마세요. 출처나 참고 자료도 표시하지 마세요."
 
     system_prompt = f"""당신은 홍성남 마태오 신부의 말투와 관점으로 직접 상담해 주는 AI입니다. 홍성남 신부의 유튜브 강의, 맹모닝 상담소, 신문 칼럼의 내용을 바탕으로, 마치 신부님이 직접 대화하듯이 답변하세요.
 
@@ -617,7 +603,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 - 경력: 1973년 동아방송 아나운서 입사 → 1975년 동아방송 언론자유 운동(민주언론운동)으로 해직 → 프리랜서로 MBC·TBC·KBS 라디오 진행 → 1990년 가톨릭평화방송(cpbc) 아나운서 팀장 합류, 이후 아나운서부 부장·실장 역임
 - 방송: cpbc에서 「추억의 가요산책」「FM 음악공감」「성서 못자리」「신앙상담 따뜻한 동행」「맹경순의 아름다운 세상」 등 다수 프로그램 진행. 현재 유튜브 '톡쏘는 영성심리' 채널에서 홍성남 신부와 함께 '맹모닝 상담소' 진행
 - 수상: 1999년 한국방송대상 아나운서상, 2007년 대한민국아나운서대상
-- 특이사항: 1975년 동아방송 해직은 박정희 유신정권의 언론 통제에 맞선 자유언론실천선언 참여 결과. 2001년 민주화운동 관련자로 공식 인정. "자유언론은 뒷날 영광이었고, 당시는 그냥 동료를 버릴 수 없었을 뿐"이라고 회고
+- 특이사항: 1975년 동아방송 해직은 박정희 유신정권의 언론 통제에 맞선 자유언론실천선언 참여 결과. 2001년 민주화운동 관련자로 공식 인정.
 - "맹경순 선생님은 누구세요?" 같은 질문에는 위 정보를 바탕으로 따뜻하게 소개하세요. 나와 함께 맹모닝 상담소를 이끌어가는 소중한 파트너라고 표현하세요.
 
 [맹모닝 상담소 안내]
@@ -638,7 +624,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 
 이전부터 많이 읽힌 책:
 - 「화나면 화내고 힘들 땐 쉬어」
-- 「아! 어쩌나」 시리즈 (신앙생활 편 / 자존감 편 / 영성심리 편)
+- 「아! 어쩘나」 시리즈 (신앙생활 편 / 자존감 편 / 영성심리 편)
 - 「풀어야 산다」
 - 「행복을 위한 탈출」
 - 「새장 밖으로」
@@ -647,7 +633,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 - 상처·트라우마, 자기혐오 → 「끝까지 나를 사랑하는 마음」「나는 생각보다 괜찮은 사람」「나로 사는 걸 깜빡했어요」
 - 마음이 힘들고 스스로 돌보는 법 → 「혼자서 마음을 치유하는 법」「내 마음이 어때서」
 - 화·분노 조절 → 「화나면 화내고 힘들 땐 쉬어」「풀어야 산다」
-- 신앙생활·영성심리 전반 → 「아! 어쩌나」 시리즈, 「새장 밖으로」「행복을 위한 탈출」
+- 신앙생활·영성심리 전반 → 「아! 어쩘나」 시리즈, 「새장 밖으로」「행복을 위한 탈출」
 - 사용자가 "책 추천해 주세요"라고 하면 고민의 유형에 맞는 책을 위 가이드에 따라 추천하세요
 
 [말투 규칙 — 매우 중요]
@@ -686,8 +672,9 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 6. 한국어로 답변하세요.
 7. 출처가 신문 칼럼인 경우 "○○신문 칼럼"이라고 표현하세요.
 8. 출처가 유튜브 시리즈인 경우 "[맹모닝 상담소] 영상", "[10분 강의]" 같은 식으로 표현하세요.
-9. 강의 일정 질문 시 schedule.json 정보만 사용하고, VectorDB의 과거 영상·자막에 언급된 날짜는 절대 일정으로 안내하지 말 것. 사용자가 직접 과거 일정을 물어볼 때만 과거 내용 참고 가능.
-10. 강의 일정 안내 및 상담소 위치·연락처 안내 시 출처 카드나 참고 자료를 절대 표시하지 말 것. 이 경우 출처 표시는 매우 잘못된 것임.{filter_instruction}{schedule_instruction}"""
+9. 강의 일정 질문 시 schedule.json 정보만 사용하고, VectorDB의 과거 영상·자막에 언급된 날짜는 절대 일정으로 안내하지 말 것.
+10. 강의 일정 안내 및 상담소 위치·연락처 안내 시 출처 카드나 참고 자료를 절대 표시하지 말 것.{filter_instruction}{schedule_instruction}"""
+
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": f"""질문: {query}
@@ -698,7 +685,6 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 위 내용을 바탕으로 답변해 주세요. 답변 끝에 참고한 출처(유튜브 강의 제목 또는 신문 칼럼 제목)를 알려주세요."""},
     ]
 
-    # 대화 히스토리 추가 (최근 4개)
     if "messages" in st.session_state and len(st.session_state.messages) > 0:
         history = st.session_state.messages[-4:]
         history_messages = [{"role": m["role"], "content": m["content"]} for m in history]
@@ -711,6 +697,8 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         max_tokens=4000,
     )
     return response.choices[0].message.content
+
+
 # =====================================================================
 # 사이드바
 # =====================================================================
@@ -756,7 +744,6 @@ with st.sidebar:
 
     st.markdown("---")
     n_results = st.slider("참고 문서 수", 3, 10, 5, help="답변 시 참고할 텍스트 수")
-
     st.markdown("---")
     st.markdown("**시스템 상태**")
     if db:
@@ -779,6 +766,8 @@ with st.sidebar:
         벡터 검색 (numpy)
     </div>
     """, unsafe_allow_html=True)
+
+
 # =====================================================================
 # 메인 영역
 # =====================================================================
@@ -792,7 +781,6 @@ st.markdown("""
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 예시 질문
 if not st.session_state.messages:
     st.markdown(get_schedule_card_html(), unsafe_allow_html=True)
     st.markdown("#### 💬 이런 질문을 해보세요")
@@ -819,25 +807,25 @@ for message in st.session_state.messages:
         if message["role"] == "assistant" and "sources" in message:
             if not message.get("is_schedule", False):
                 with st.expander("📚 참고 자료", expanded=False):
-                  for src in message["sources"]:
-                      source_type = src.get('source_type', 'youtube')
-                      if source_type == 'column':
-                          newspaper = src.get('newspaper', '신문')
-                          st.markdown(f"""
-                          <div class="source-card-column">
-                              <div class="title">📰 {src['title']}</div>
-                              <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp; {newspaper} &nbsp;|&nbsp;
-                              <a href="{src.get('url', '#')}" target="_blank">🔗 칼럼 보기</a></div>
-                          </div>
-                          """, unsafe_allow_html=True)
-                      else:
-                          st.markdown(f"""
-                          <div class="source-card">
-                              <div class="title">📹 {src['title']}</div>
-                              <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp;
-                              <a href="{src.get('url', '#')}" target="_blank">🔗 영상 보기</a></div>
-                          </div>
-                          """, unsafe_allow_html=True)
+                    for src in message["sources"]:
+                        source_type = src.get('source_type', 'youtube')
+                        if source_type == 'column':
+                            newspaper = src.get('newspaper', '신문')
+                            st.markdown(f"""
+                            <div class="source-card-column">
+                                <div class="title">📰 {src['title']}</div>
+                                <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp; {newspaper} &nbsp;|&nbsp;
+                                <a href="{src.get('url', '#')}" target="_blank">🔗 칼럼 보기</a></div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"""
+                            <div class="source-card">
+                                <div class="title">📹 {src['title']}</div>
+                                <div class="meta">📅 {src.get('date', '')} &nbsp;|&nbsp;
+                                <a href="{src.get('url', '#')}" target="_blank">🔗 영상 보기</a></div>
+                            </div>
+                            """, unsafe_allow_html=True)
 
 # =====================================================================
 # 채팅 입력 처리
@@ -859,13 +847,15 @@ if prompt:
             st.error("OpenAI API 키가 설정되지 않았습니다.")
         else:
             with st.spinner("잠시만 기다려 주세요. 토마스 형제님께서 열심히 찾고 있습니다...."):
+                # 일정 질문 여부 먼저 판단
+                is_schedule_query = any(kw in prompt for kw in SCHEDULE_KEYWORDS)
+
                 # 출처 필터 감지
                 source_filter = detect_source_filter(prompt)
 
                 # 필터 적용 검색
                 results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
 
-                # 필터 결과가 없으면 전체 검색으로 폴백
                 if (results is None or not results.get('documents')) and source_filter is not None:
                     st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
                     source_filter = None
@@ -876,14 +866,12 @@ if prompt:
                     metas = results['metadatas']
                     sims = results['similarities']
 
-                    # 필터 배지 표시
                     if source_filter:
                         st.markdown(f'<span class="filter-badge">{source_filter["label"]}</span>', unsafe_allow_html=True)
 
                     response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
-                    # 사용자가 상담을 요청한 경우에만 전화 걸기 버튼 표시
                     counseling_keywords = ['상담 받고', '상담받고', '상담 신청', '상담하고 싶', '상담을 받', '상담 원', '상담소 번호', '상담소 전화', '전화번호 알려']
                     if any(kw in prompt for kw in counseling_keywords) and '02-727-2516' in response:
                         st.markdown("""
@@ -919,31 +907,30 @@ if prompt:
                             if source_type == 'column':
                                 source_info['newspaper'] = meta.get('newspaper', '신문')
                             sources.append(source_info)
-                    schedule_keywords = ['강의 일정', '특강', '언제', '일정', '다음 강의', '강의 날짜', '특강 날짜', '다음 특강', '몇월', '몇 월']
-                    is_schedule_query = any(kw in prompt for kw in schedule_keywords)
-                    if not is_schedule_query:
-                      with st.expander("📚 참고 자료", expanded=True):
-                         for src in sources:
-                            source_type = src.get('source_type', 'youtube')
-                            if source_type == 'column':
-                                newspaper = src.get('newspaper', '신문')
-                                st.markdown(f"""
-                                <div class="source-card-column">
-                                    <div class="title">📰 {src['title']}</div>
-                                    <div class="meta">📅 {src['date']} &nbsp;|&nbsp; {newspaper} &nbsp;|&nbsp; 관련도: {src['relevance']} &nbsp;|&nbsp;
-                                    <a href="{src['url']}" target="_blank">🔗 칼럼 보기</a></div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            else:
-                                st.markdown(f"""
-                                <div class="source-card">
-                                    <div class="title">📹 {src['title']}</div>
-                                    <div class="meta">📅 {src['date']} &nbsp;|&nbsp; 관련도: {src['relevance']} &nbsp;|&nbsp;
-                                    <a href="{src['url']}" target="_blank">🔗 영상 보기</a></div>
-                                </div>
-                                """, unsafe_allow_html=True)
 
-                  st.session_state.messages.append({
+                    if not is_schedule_query:
+                        with st.expander("📚 참고 자료", expanded=True):
+                            for src in sources:
+                                source_type = src.get('source_type', 'youtube')
+                                if source_type == 'column':
+                                    newspaper = src.get('newspaper', '신문')
+                                    st.markdown(f"""
+                                    <div class="source-card-column">
+                                        <div class="title">📰 {src['title']}</div>
+                                        <div class="meta">📅 {src['date']} &nbsp;|&nbsp; {newspaper} &nbsp;|&nbsp; 관련도: {src['relevance']} &nbsp;|&nbsp;
+                                        <a href="{src['url']}" target="_blank">🔗 칼럼 보기</a></div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                else:
+                                    st.markdown(f"""
+                                    <div class="source-card">
+                                        <div class="title">📹 {src['title']}</div>
+                                        <div class="meta">📅 {src['date']} &nbsp;|&nbsp; 관련도: {src['relevance']} &nbsp;|&nbsp;
+                                        <a href="{src['url']}" target="_blank">🔗 영상 보기</a></div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+
+                    st.session_state.messages.append({
                         "role": "assistant",
                         "content": response,
                         "sources": sources,
