@@ -560,7 +560,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         schedule_response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요.\n\n{schedule_text}"},
+                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요. 답변은 2~3문장마다 줄바꿈을 해서 읽기 편하게 작성하세요.\n\n{schedule_text}"},
                 {"role": "user", "content": query}
             ],
             temperature=0.5,
