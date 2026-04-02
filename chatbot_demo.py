@@ -950,7 +950,36 @@ if prompt:
 # 푸터
 # =====================================================================
 st.markdown("""
-<div class="footer">
+    <style>
+        /* 1. 상단 메뉴 숨기기 */
+        header {visibility: hidden; height: 0px;}
+        #MainMenu {visibility: hidden;}
+
+        /* 2. 하단 footer 완전 제거 */
+        footer {visibility: hidden !important;}
+
+        /* 3. Streamlit 배지 / 아이콘 제거 (핵심) */
+        [data-testid="stToolbar"] {display: none !important;}
+        [data-testid="stDecoration"] {display: none !important;}
+        [data-testid="stStatusWidget"] {display: none !important;}
+        .viewerBadge_container__1QS1n {display: none !important;}
+
+        /* 4. 우측 하단 떠있는 버튼 제거 */
+        button[kind="icon"] {display: none !important;}
+
+        /* 5. 커스텀 푸터 */
+        .my-custom-footer {
+            width: 100%;
+            text-align: center;
+            color: #888888;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            padding: 20px 0;
+            border-top: 1px solid #eeeeee;
+            margin-top: 50px;
+        }
+    </style>
+<div class="my-custom-footer">
     🕊️ 톡쏘는 영성심리 AI 상담 | 홍성남 신부님 유튜브 강의 및 신문 칼럼 기반<br>
     본 서비스는 AI 기반 참고 상담이며, 전문 심리상담을 대체하지 않습니다.<br>
     © 2026 JADE AI | Powered by GPT-4o-mini + numpy 벡터 검색
