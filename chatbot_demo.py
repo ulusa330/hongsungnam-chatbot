@@ -165,6 +165,15 @@ st.markdown("""
     footer {visibility: hidden !important;} #MainMenu {visibility: hidden !important;} header {visibility: hidden !important;}
     .stDeployButton {display: none !important;} [data-testid="stToolbar"] {display: none !important;}
     [data-testid="stDecoration"] {display: none !important;} [data-testid="stStatusWidget"] {display: none !important;}
+    [data-testid="stAudioInput"] {
+          background-color: #ffffff !important;
+          border-radius: 12px !important;
+          padding: 0.5rem !important;
+    }
+    [data-testid="stAudioInput"] button {
+        color: #1B2B5E !important;
+    }
+ 
     @media (max-width: 768px) {
         [data-testid="stSidebar"] { display: none !important; }
         .main .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
