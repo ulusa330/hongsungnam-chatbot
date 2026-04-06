@@ -580,20 +580,6 @@ if not st.session_state.messages:
             st.rerun()
     st.markdown("---")
 
-# 🎙️ 음성 입력 섹션
-st.markdown("#### 🎙️ 음성으로 질문하기")
-audio_input = st.audio_input("마이크 버튼을 눌러 질문하세요", key="audio_input")
-if audio_input:
-    with st.spinner("🎙️ 음성을 텍스트로 변환 중..."):
-        audio_bytes = audio_input.read()
-        transcribed = transcribe_audio(audio_bytes)
-        if transcribed:
-            st.info(f"🗣️ 인식된 질문: **{transcribed}**")
-            st.session_state.pending_question = transcribed
-            st.rerun()
-
-st.markdown("---")
-
 # 기존 메시지 표시
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🙋" if message["role"] == "user" else "🕊️"):
