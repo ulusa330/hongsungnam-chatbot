@@ -658,6 +658,21 @@ if prompt:
                     response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
+                    # 모바일 자동 스크롤 — 답변 첫 줄이 보이도록
+                    st.markdown("""
+                    <script>
+                    setTimeout(function() {
+                        var messages = window.parent.document.querySelectorAll('[data-testid="stChatMessage"]');
+                        if (messages.length > 0) {
+                            var lastMsg = messages[messages.length - 1];
+                            var rect = lastMsg.getBoundingClientRect();
+                            var scrollTop = window.parent.pageYOffset + rect.top - 60;
+                            window.parent.scrollTo({top: scrollTop, behavior: 'smooth'});
+                        }
+                    }, 500);
+                    </script>
+                    """, unsafe_allow_html=True)
+
                     audio_data = None
                     if st.session_state.get("voice_mode", False):
                         with st.spinner("🔊 신부님 목소리로 변환 중..."):
