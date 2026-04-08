@@ -199,6 +199,7 @@ SOURCE_TYPE_FILTERS = {
 }
 SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강', '다음 특강 언제']
 BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
+LECTURE_SUMMARY_TYPE = 'lecture_summary'
 
 def detect_source_filter(query):
     query_lower = query.lower().strip()
@@ -403,6 +404,8 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
             source_label = f"신문 칼럼 - {newspaper}"
         elif source_type in BOOK_SOURCE_TYPES:
             source_label = "저서"
+        elif source_type == 'lecture_summary':
+            source_label = "월특강 요약"
         else:
             source_label = "유튜브 강의"
         context_parts.append(f"[출처 {i+1}: {title} ({source_label})]\n{doc}")
@@ -491,6 +494,13 @@ def render_source_card(src, show_relevance=False):
         <div class="source-card-book">
             <div class="title">📖 {title}</div>
             <div class="meta">📚 {book_label}{relevance_str}</div>
+        </div>''', unsafe_allow_html=True)
+    elif source_type == 'lecture_summary':
+        channel_link = '<a href="https://youtube.com/@fr.hongsungnam" target="_blank">🔗 유튜브 채널 보기</a>'
+        st.markdown(f'''
+        <div class="source-card" style="border-left-color:#6366F1;">
+            <div class="title">🎓 {title}</div>
+            <div class="meta">📅 월특강 요약{relevance_str} | {channel_link}</div>
         </div>''', unsafe_allow_html=True)
     else:
         link = f'<a href="{url}" target="_blank">🔗 영상 보기</a>' if url else ''
@@ -712,9 +722,19 @@ if prompt:
                                 source_info['newspaper'] = meta.get('newspaper', '신문')
                             sources.append(source_info)
 
+                    # 월특강 요약 질문 감지
+                    lecture_keywords = ['월특강', '특강 요약', '특강영상', '특강 영상', '월 특강']
+                    is_lecture_query = any(kw in prompt for kw in lecture_keywords)
+
                     if not is_schedule_query:
                         with st.expander("📚 참고 자료", expanded=True):
                             for src in sources:
+                                # 월특강 질문이면 lecture_summary만, 일반 질문이면 lecture_summary 제외
+                                src_type = src.get('source_type', 'youtube')
+                                if is_lecture_query and src_type != 'lecture_summary':
+                                    continue
+                                if not is_lecture_query and src_type == 'lecture_summary':
+                                    continue
                                 render_source_card(src, show_relevance=True)
 
                     msg = {"role": "assistant", "content": response, "sources": sources, "is_schedule": is_schedule_query}
