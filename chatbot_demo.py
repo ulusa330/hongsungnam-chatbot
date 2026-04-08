@@ -197,7 +197,7 @@ SOURCE_TYPE_FILTERS = {
     'column': ['칼럼', '신문', '기고', '신문 칼럼', '신문칼럼'],
     'youtube': ['유튜브', '영상', '동영상', '강의 영상'],
 }
-SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '언제', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강', '특강', '일정']
+SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강', '다음 특강 언제']
 BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
 
 def detect_source_filter(query):
