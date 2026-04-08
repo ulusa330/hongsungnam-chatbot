@@ -200,6 +200,7 @@ SOURCE_TYPE_FILTERS = {
 SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강', '다음 특강 언제']
 BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
 LECTURE_SUMMARY_TYPE = 'lecture_summary'
+LECTURE_QUERY_KEYWORDS = ['월특강', '특강 요약', '특강요약', '특강영상', '특강 영상', '월 특강', '특강 보고', '특강 알려', '요약해줘', '요약해 줘', '요약 해줘', '특강을 요약', '특강 내용']
 
 def detect_source_filter(query):
     query_lower = query.lower().strip()
@@ -311,13 +312,22 @@ def search_similar(db, query, n_results=5, source_filter=None):
     query_embedding = np.array(response.data[0].embedding)
     filter_indices = apply_filter(db, source_filter)
 
-    # 도서 데이터 검색 제외 (추후 활성화 시 아래 3줄 삭제)
-    book_excluded = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in BOOK_SOURCE_TYPES]
-    book_excluded_set = set(book_excluded)
-    if filter_indices is not None:
-        filter_indices = [i for i in filter_indices if i in book_excluded_set]
+    # 월특강 질문이면 lecture_summary만 검색
+    is_lecture_q = any(kw in query for kw in LECTURE_QUERY_KEYWORDS)
+    if is_lecture_q:
+        lecture_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+        if filter_indices is not None:
+            filter_indices = [i for i in filter_indices if i in set(lecture_indices)]
+        else:
+            filter_indices = lecture_indices
     else:
-        filter_indices = book_excluded
+        # 도서 데이터 검색 제외 (추후 활성화 시 아래 3줄 삭제)
+        book_excluded = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in BOOK_SOURCE_TYPES and m.get('source_type') != 'lecture_summary']
+        book_excluded_set = set(book_excluded)
+        if filter_indices is not None:
+            filter_indices = [i for i in filter_indices if i in book_excluded_set]
+        else:
+            filter_indices = book_excluded
 
     if filter_indices is not None and len(filter_indices) == 0:
         return None
