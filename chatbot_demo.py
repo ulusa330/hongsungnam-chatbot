@@ -3,11 +3,6 @@
 ====================================================================
 홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v6)
 ====================================================================
-[변경사항 v6]
-  - Whisper STT: 마이크 음성 입력 지원
-  - ElevenLabs TTS: 신부님 목소리로 음성 답변
-  - 음성/텍스트 모드 전환 버튼 추가
-====================================================================
 """
 import os
 import re
@@ -156,24 +151,17 @@ st.markdown("""
     .source-card-column .title { font-weight: 600; color: #1B2B5E; font-size: 0.95rem; margin-bottom: 0.3rem; }
     .source-card-column .meta { color: #666; font-size: 0.8rem; }
     .source-card-column a { color: #0D9488; text-decoration: none; font-weight: 500; }
+    .source-card-book { background: white; border-left: 4px solid #7C3AED; padding: 1rem 1.2rem; margin: 0.5rem 0; border-radius: 0 8px 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .source-card-book .title { font-weight: 600; color: #1B2B5E; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .source-card-book .meta { color: #666; font-size: 0.8rem; }
     .filter-badge { display: inline-block; background: #1B2B5E; color: white !important; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-bottom: 0.5rem; }
     .stat-card { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 1rem; text-align: center; margin: 0.5rem 0; }
     .stat-card .number { font-size: 1.8rem; font-weight: 700; color: #C9A84C; }
     .stat-card .label { font-size: 0.8rem; color: #a0b0d0; }
-    .voice-btn { background: linear-gradient(135deg, #C9A84C, #e0b84a); color: #1B2B5E !important; border: none; border-radius: 50px; padding: 0.8rem 2rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
     .stTextInput input, .stChatInput textarea { background-color: #FFFFFF !important; color: #1B2B5E !important; }
     footer {visibility: hidden !important;} #MainMenu {visibility: hidden !important;} header {visibility: hidden !important;}
     .stDeployButton {display: none !important;} [data-testid="stToolbar"] {display: none !important;}
     [data-testid="stDecoration"] {display: none !important;} [data-testid="stStatusWidget"] {display: none !important;}
-    [data-testid="stAudioInput"] {
-          background-color: #ffffff !important;
-          border-radius: 12px !important;
-          padding: 0.5rem !important;
-    }
-    [data-testid="stAudioInput"] button {
-        color: #1B2B5E !important;
-    }
- 
     @media (max-width: 768px) {
         [data-testid="stSidebar"] { display: none !important; }
         .main .block-container { padding: 0.5rem 1rem !important; max-width: 100% !important; }
@@ -210,6 +198,7 @@ SOURCE_TYPE_FILTERS = {
     'youtube': ['유튜브', '영상', '동영상', '강의 영상'],
 }
 SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '언제', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '4월 특강', '5월 특강', '6월 특강', '특강', '일정']
+BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
 
 def detect_source_filter(query):
     query_lower = query.lower().strip()
@@ -244,8 +233,7 @@ def apply_filter(db, source_filter):
         filter_value = source_filter['value']
         if filter_type == 'newspaper':
             if meta.get('source_type') == 'column':
-                newspaper = meta.get('newspaper', '')
-                if filter_value in newspaper:
+                if filter_value in meta.get('newspaper', ''):
                     valid_indices.append(i)
         elif filter_type == 'youtube_series':
             if meta.get('source_type', 'youtube') == 'youtube':
@@ -255,8 +243,7 @@ def apply_filter(db, source_filter):
                     valid_indices.append(i)
         elif filter_type == 'monthly_lecture':
             if meta.get('source_type', 'youtube') == 'youtube':
-                title = meta.get('title', '')
-                if MONTHLY_LECTURE_PATTERN.search(title):
+                if MONTHLY_LECTURE_PATTERN.search(meta.get('title', '')):
                     valid_indices.append(i)
         elif filter_type == 'source_type':
             if meta.get('source_type', 'youtube') == filter_value:
@@ -282,12 +269,15 @@ def init_vectordb():
         metadata_list = saved.get('metadata', [])
         youtube_titles = set()
         column_count = 0
+        book_count = 0
         for m in metadata_list:
             source_type = m.get('source_type', 'youtube')
             if source_type == 'youtube':
                 youtube_titles.add(m.get('title', ''))
             elif source_type == 'column':
                 column_count += 1
+            elif source_type in BOOK_SOURCE_TYPES:
+                book_count += 1
         return {
             'embeddings': embeddings,
             'metadata': metadata_list,
@@ -295,6 +285,7 @@ def init_vectordb():
             'count': len(embeddings),
             'youtube_count': len(youtube_titles),
             'column_count': column_count,
+            'book_count': book_count,
         }
     except Exception as e:
         st.error(f"벡터DB 로드 오류: {e}")
@@ -318,6 +309,15 @@ def search_similar(db, query, n_results=5, source_filter=None):
     response = openai_client.embeddings.create(model="text-embedding-3-small", input=query)
     query_embedding = np.array(response.data[0].embedding)
     filter_indices = apply_filter(db, source_filter)
+
+    # 도서 데이터 검색 제외 (추후 활성화 시 아래 3줄 삭제)
+    book_excluded = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in BOOK_SOURCE_TYPES]
+    book_excluded_set = set(book_excluded)
+    if filter_indices is not None:
+        filter_indices = [i for i in filter_indices if i in book_excluded_set]
+    else:
+        filter_indices = book_excluded
+
     if filter_indices is not None and len(filter_indices) == 0:
         return None
     embeddings = db['embeddings']
@@ -339,10 +339,9 @@ def search_similar(db, query, n_results=5, source_filter=None):
     }
 
 # =====================================================================
-# 음성 관련 함수 (Whisper STT + ElevenLabs TTS)
+# 음성 관련 함수
 # =====================================================================
 def transcribe_audio(audio_bytes):
-    """Whisper로 음성 → 텍스트 변환"""
     openai_client = init_openai()
     if not openai_client:
         return None
@@ -350,18 +349,13 @@ def transcribe_audio(audio_bytes):
         import io
         audio_file = io.BytesIO(audio_bytes)
         audio_file.name = "audio.wav"
-        transcript = openai_client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file,
-            language="ko"
-        )
+        transcript = openai_client.audio.transcriptions.create(model="whisper-1", file=audio_file, language="ko")
         return transcript.text
     except Exception as e:
         st.error(f"음성 인식 오류: {e}")
         return None
 
 def text_to_speech(text):
-    """ElevenLabs로 텍스트 → 신부님 목소리 변환"""
     api_key = st.secrets.get("ELEVENLABS_API_KEY", os.environ.get("ELEVENLABS_API_KEY", ""))
     voice_id = st.secrets.get("ELEVENLABS_VOICE_ID", os.environ.get("ELEVENLABS_VOICE_ID", ""))
     if not api_key or not voice_id:
@@ -369,26 +363,13 @@ def text_to_speech(text):
     try:
         import requests
         url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-        headers = {
-            "xi-api-key": api_key,
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "text": text[:2500],  # ElevenLabs Starter 제한
-            "model_id": "eleven_multilingual_v2",
-            "voice_settings": {
-                "stability": 0.5,
-                "similarity_boost": 0.75
-            }
-        }
+        headers = {"xi-api-key": api_key, "Content-Type": "application/json"}
+        payload = {"text": text[:2500], "model_id": "eleven_multilingual_v2", "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}}
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 200:
-            return response.content  # MP3 bytes
-        else:
-            st.error(f"TTS 오류: {response.status_code} - {response.text[:100]}")
-            return None
-    except Exception as e:
-        st.error(f"TTS 오류: {e}")
+            return response.content
+        return None
+    except Exception:
         return None
 
 # =====================================================================
@@ -405,7 +386,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         schedule_response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요.\n\n{schedule_text}"},
+                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요. 답변은 2~3문장마다 줄바꿈을 해서 읽기 편하게 작성하세요.\n\n{schedule_text}"},
                 {"role": "user", "content": query}
             ],
             temperature=0.5,
@@ -420,6 +401,8 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         if source_type == 'column':
             newspaper = meta.get('newspaper', '신문')
             source_label = f"신문 칼럼 - {newspaper}"
+        elif source_type in BOOK_SOURCE_TYPES:
+            source_label = "저서"
         else:
             source_label = "유튜브 강의"
         context_parts.append(f"[출처 {i+1}: {title} ({source_label})]\n{doc}")
@@ -427,8 +410,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 
     filter_instruction = ""
     if source_filter:
-        filter_label = source_filter.get('label', '')
-        filter_instruction = f"\n\n[현재 검색 필터]\n사용자가 특정 출처를 지정하여 질문했습니다: {filter_label}"
+        filter_instruction = f"\n\n[현재 검색 필터] {source_filter.get('label', '')}"
 
     system_prompt = f"""당신은 홍성남 마태오 신부의 말투와 관점으로 직접 상담해 주는 AI입니다.
 
@@ -481,6 +463,46 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
     return response.choices[0].message.content
 
 # =====================================================================
+# 참고 자료 카드 렌더링 함수
+# =====================================================================
+def render_source_card(src, show_relevance=False):
+    """source_type에 따라 적절한 카드 렌더링"""
+    source_type = src.get('source_type', 'youtube')
+    title = src.get('title', '')
+    date = src.get('date', '')
+    url = src.get('url', '')
+    relevance = src.get('relevance', '')
+    relevance_str = f" | 관련도: {relevance}" if show_relevance and relevance else ""
+
+    if source_type == 'column':
+        newspaper = src.get('newspaper', '신문')
+        link = f'<a href="{url}" target="_blank">🔗 칼럼 보기</a>' if url else ''
+        st.markdown(f'''
+        <div class="source-card-column">
+            <div class="title">📰 {title}</div>
+            <div class="meta">📅 {date} | {newspaper}{relevance_str}{" | " + link if link else ""}</div>
+        </div>''', unsafe_allow_html=True)
+    elif source_type in BOOK_SOURCE_TYPES:
+        book_label = {'book_hong': '홍성남 저서', 'book_bible': '성경 묵상', 'book_spiritual': '영성 자료'}.get(source_type, '저서')
+        st.markdown(f'''
+        <div class="source-card-book">
+            <div class="title">📖 {title}</div>
+            <div class="meta">📚 {book_label}{relevance_str}</div>
+        </div>''', unsafe_allow_html=True)
+    else:
+        link = f'<a href="{url}" target="_blank">🔗 영상 보기</a>' if url else ''
+        st.markdown(f'''
+        <div class="source-card">
+            <div class="title">📹 {title}</div>
+            <div class="meta">📅 {date}{relevance_str}{" | " + link if link else ""}</div>
+        </div>''', unsafe_allow_html=True)
+
+# =====================================================================
+# API 키 미리 로드 (사이드바 오류 방지)
+# =====================================================================
+voice_api_key = st.secrets.get("ELEVENLABS_API_KEY", os.environ.get("ELEVENLABS_API_KEY", ""))
+
+# =====================================================================
 # 사이드바
 # =====================================================================
 with st.sidebar:
@@ -498,16 +520,17 @@ with st.sidebar:
         </div>
         """, unsafe_allow_html=True)
         st.markdown(f'<div class="stat-card"><div class="number">{db["count"]:,}</div><div class="label">학습된 텍스트 조각</div></div>', unsafe_allow_html=True)
-        youtube_count = db.get('youtube_count', 1037)
+        youtube_count = db.get('youtube_count', 1036)
         column_count = db.get('column_count', 0)
+        book_count = db.get('book_count', 0)
         st.markdown(f'<div class="stat-card"><div class="number">{youtube_count:,}</div><div class="label">📹 분석된 강의 영상</div></div>', unsafe_allow_html=True)
         if column_count > 0:
             st.markdown(f'<div class="stat-card"><div class="number">{column_count:,}</div><div class="label">📰 수집된 신문 칼럼</div></div>', unsafe_allow_html=True)
+        if book_count > 0:
+            st.markdown(f'<div class="stat-card"><div class="number">{book_count:,}</div><div class="label">📚 수집된 도서</div></div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # 🎙️ 음성 모드 토글
-    voice_api_key = st.secrets.get("ELEVENLABS_API_KEY", os.environ.get("ELEVENLABS_API_KEY", ""))
     if voice_api_key:
         st.markdown("**🎙️ 음성 응답 설정**")
         voice_mode = st.toggle("신부님 목소리로 답변 듣기", value=False, key="voice_mode")
@@ -584,19 +607,13 @@ if not st.session_state.messages:
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🙋" if message["role"] == "user" else "🕊️"):
         st.markdown(message["content"])
-        # 음성 답변 재생 (저장된 경우)
         if message["role"] == "assistant" and "audio" in message:
             st.audio(message["audio"], format="audio/mp3")
         if message["role"] == "assistant" and "sources" in message:
             if not message.get("is_schedule", False):
                 with st.expander("📚 참고 자료", expanded=False):
                     for src in message["sources"]:
-                        source_type = src.get('source_type', 'youtube')
-                        if source_type == 'column':
-                            newspaper = src.get('newspaper', '신문')
-                            st.markdown(f'<div class="source-card-column"><div class="title">📰 {src["title"]}</div><div class="meta">📅 {src.get("date","")} | {newspaper} | <a href="{src.get("url","#")}" target="_blank">🔗 칼럼 보기</a></div></div>', unsafe_allow_html=True)
-                        else:
-                            st.markdown(f'<div class="source-card"><div class="title">📹 {src["title"]}</div><div class="meta">📅 {src.get("date","")} | <a href="{src.get("url","#")}" target="_blank">🔗 영상 보기</a></div></div>', unsafe_allow_html=True)
+                        render_source_card(src, show_relevance=False)
 
 # =====================================================================
 # 채팅 입력 처리
@@ -638,7 +655,6 @@ if prompt:
                     response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
-                    # 🔊 ElevenLabs TTS 음성 생성
                     audio_data = None
                     if st.session_state.get("voice_mode", False):
                         with st.spinner("🔊 신부님 목소리로 변환 중..."):
@@ -646,7 +662,6 @@ if prompt:
                             if audio_data:
                                 st.audio(audio_data, format="audio/mp3")
 
-                    # 전화 버튼
                     counseling_keywords = ['상담 받고', '상담받고', '상담 신청', '상담하고 싶', '상담을 받', '상담 원', '상담소 번호', '상담소 전화', '전화번호 알려']
                     if any(kw in prompt for kw in counseling_keywords) and '02-727-2516' in response:
                         st.markdown("""
@@ -662,7 +677,13 @@ if prompt:
                         if title not in seen_titles:
                             seen_titles.add(title)
                             source_type = meta.get('source_type', 'youtube')
-                            source_info = {'title': title, 'date': meta.get('upload_date', ''), 'url': meta.get('url', ''), 'relevance': f"{sim * 100:.0f}%", 'source_type': source_type}
+                            source_info = {
+                                'title': title,
+                                'date': meta.get('upload_date', ''),
+                                'url': meta.get('url', ''),
+                                'relevance': f"{sim * 100:.0f}%",
+                                'source_type': source_type,
+                            }
                             if source_type == 'column':
                                 source_info['newspaper'] = meta.get('newspaper', '신문')
                             sources.append(source_info)
@@ -670,12 +691,7 @@ if prompt:
                     if not is_schedule_query:
                         with st.expander("📚 참고 자료", expanded=True):
                             for src in sources:
-                                source_type = src.get('source_type', 'youtube')
-                                if source_type == 'column':
-                                    newspaper = src.get('newspaper', '신문')
-                                    st.markdown(f'<div class="source-card-column"><div class="title">📰 {src["title"]}</div><div class="meta">📅 {src["date"]} | {newspaper} | 관련도: {src["relevance"]} | <a href="{src["url"]}" target="_blank">🔗 칼럼 보기</a></div></div>', unsafe_allow_html=True)
-                                else:
-                                    st.markdown(f'<div class="source-card"><div class="title">📹 {src["title"]}</div><div class="meta">📅 {src["date"]} | 관련도: {src["relevance"]} | <a href="{src["url"]}" target="_blank">🔗 영상 보기</a></div></div>', unsafe_allow_html=True)
+                                render_source_card(src, show_relevance=True)
 
                     msg = {"role": "assistant", "content": response, "sources": sources, "is_schedule": is_schedule_query}
                     if audio_data:
