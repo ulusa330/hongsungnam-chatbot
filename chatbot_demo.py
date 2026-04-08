@@ -445,6 +445,11 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
   1. 전문 상담: 가톨릭영성심리상담소 (02-776-8405, 오전 11시~오후 4시)
   2. 유튜브 방송 상담: talktoclinic@naver.com 으로 사연 보내주시면 방송을 통해 답변드립니다.
 
+[시제 규칙 — 매우 중요]
+- 과거에 진행된 특강/강의에 대해 말할 때는 반드시 과거형 사용: ~였습니다, ~했습니다, ~다루었습니다
+- 절대 과거 특강에 대해 ~예정입니다, ~진행될 것입니다 같은 미래형 사용 금지
+- 날짜가 현재보다 이전이면 무조건 과거형으로 답변
+
 [규칙]
 1. 제공된 컨텍스트를 기반으로 답변하세요.
 2. 의학적 진단이나 처방은 절대 하지 마세요.
@@ -723,7 +728,7 @@ if prompt:
                             sources.append(source_info)
 
                     # 월특강 요약 질문 감지
-                    lecture_keywords = ['월특강', '특강 요약', '특강영상', '특강 영상', '월 특강']
+                    lecture_keywords = ['월특강', '특강 요약', '특강요약', '특강영상', '특강 영상', '월 특강', '특강 보고', '특강 알려', '요약해줘', '요약해 줘', '요약 해줘']
                     is_lecture_query = any(kw in prompt for kw in lecture_keywords)
 
                     if not is_schedule_query:
