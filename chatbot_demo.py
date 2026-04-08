@@ -435,9 +435,12 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 - 따뜻하면서도 직설적이고 톡 쏘는 어조
 - "늘 강조하는 건데요", "강의에서도 말씀드렸지만" 같은 표현 자연스럽게 사용
 
-[상담 안내 규칙]
-- 상담 요청 시: 먼저 고민 파악 → "저는 현재 성직자 상담만 하고 있어서 일반 신자분들과 개인 상담은 어렵습니다." 반드시 포함
-- 전문 상담: 가톨릭영성심리상담소(02-727-2516, 오전 11시~오후 4시) 안내
+[상담 안내 규칙 — 매우 중요]
+- 상담 요청 시 "감사합니다", "반갑습니다" 같은 환영 문구 절대 금지
+- 바로 핵심만: "저는 현재 성직자 상담만 하고 있어서 일반 신자분들과 개인 상담은 어렵습니다."
+- 이후 아래 두 가지 안내:
+  1. 전문 상담: 가톨릭영성심리상담소 (02-776-8405, 오전 11시~오후 4시)
+  2. 유튜브 방송 상담: talktoclinic@naver.com 으로 사연 보내주시면 방송을 통해 답변드립니다.
 
 [규칙]
 1. 제공된 컨텍스트를 기반으로 답변하세요.
@@ -662,12 +665,18 @@ if prompt:
                             if audio_data:
                                 st.audio(audio_data, format="audio/mp3")
 
-                    counseling_keywords = ['상담 받고', '상담받고', '상담 신청', '상담하고 싶', '상담을 받', '상담 원', '상담소 번호', '상담소 전화', '전화번호 알려']
-                    if any(kw in prompt for kw in counseling_keywords) and '02-727-2516' in response:
+                    counseling_keywords = ['상담 받고', '상담받고', '상담 신청', '상담하고 싶', '상담을 받', '상담 원', '상담소 번호', '상담소 전화', '전화번호 알려', '상담받고 싶', '상담하고싶', '상담 원해', '상담 부탁']
+                    if any(kw in prompt for kw in counseling_keywords) and '02-776-8405' in response:
                         st.markdown("""
-                        <a href="tel:02-727-2516" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#C9A84C,#e0b84a);color:#1B2B5E !important;padding:0.8rem 1.5rem;border-radius:12px;text-decoration:none;font-size:1.1rem;font-weight:600;margin:1rem 0;box-shadow:0 2px 8px rgba(201,168,76,0.4);">
-                        📞 가톨릭영성심리상담소 바로 전화 걸기<br>
-                        <span style="font-size:0.85rem;font-weight:400;">02-727-2516 (오전 11시~오후 4시)</span></a>
+                        <div style="background:linear-gradient(135deg,#1B2B5E,#2d4a8c);border-radius:12px;padding:1rem 1.5rem;margin:1rem 0;">
+                            <div style="color:#C9A84C;font-weight:700;font-size:1rem;margin-bottom:0.8rem;">📞 상담 안내</div>
+                            <a href="tel:02-776-8405" target="_blank" style="display:block;background:linear-gradient(135deg,#C9A84C,#e0b84a);color:#1B2B5E !important;padding:0.7rem 1.2rem;border-radius:8px;text-decoration:none;font-size:1rem;font-weight:600;margin-bottom:0.5rem;text-align:center;">
+                            📞 가톨릭영성심리상담소 전화 연결<br>
+                            <span style="font-size:0.85rem;font-weight:400;">02-776-8405 (오전 11시~오후 4시)</span></a>
+                            <a href="mailto:talktoclinic@naver.com" style="display:block;background:rgba(255,255,255,0.1);color:white !important;padding:0.7rem 1.2rem;border-radius:8px;text-decoration:none;font-size:0.95rem;text-align:center;margin-top:0.5rem;">
+                            ✉️ 유튜브 방송 상담 신청<br>
+                            <span style="font-size:0.85rem;color:#a0b0d0;">talktoclinic@naver.com 으로 사연 보내기</span></a>
+                        </div>
                         """, unsafe_allow_html=True)
 
                     seen_titles = set()
