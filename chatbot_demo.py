@@ -315,19 +315,16 @@ def search_similar(db, query, n_results=5, source_filter=None):
         return None
     response = openai_client.embeddings.create(model="text-embedding-3-small", input=query)
     query_embedding = np.array(response.data[0].embedding)
-    filter_indices = apply_filter(db, source_filter)
-
-    # 월특강 질문이면 lecture_summary만 검색
+    # 월특강 질문이면 apply_filter 무시하고 lecture_summary만 검색
     is_lecture_q = any(kw in query for kw in LECTURE_QUERY_KEYWORDS)
     if is_lecture_q:
-        lecture_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
-        if filter_indices is not None:
-            filter_indices = [i for i in filter_indices if i in set(lecture_indices)]
-        else:
-            filter_indices = lecture_indices
+        filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
     else:
-        # 도서 데이터 검색 제외 (추후 활성화 시 아래 3줄 삭제)
-        book_excluded = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in BOOK_SOURCE_TYPES and m.get('source_type') != 'lecture_summary']
+        filter_indices = apply_filter(db, source_filter)
+        # 도서/월특강요약 데이터 검색 제외 (추후 활성화 시 아래 4줄 삭제)
+        book_excluded = [i for i, m in enumerate(db['metadata'])
+                         if m.get('source_type') not in BOOK_SOURCE_TYPES
+                         and m.get('source_type') != 'lecture_summary']
         book_excluded_set = set(book_excluded)
         if filter_indices is not None:
             filter_indices = [i for i in filter_indices if i in book_excluded_set]
