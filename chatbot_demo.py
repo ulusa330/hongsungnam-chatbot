@@ -320,7 +320,7 @@ def search_similar(db, query, n_results=5, source_filter=None):
     if is_lecture_q:
         # 연도+월 파싱 시도 (예: "26년 3월", "2026년 3월", "26년03월")
         year_month_key = None
-        ym_match = re.search(r'(20)?(\d{2})년\s*(\d{1,2})월', query)
+        ym_match = re.search(r'(20)?(\d{2})년도?\s*(\d{1,2})월', query)
         if ym_match:
             yy = ym_match.group(2)
             mm = ym_match.group(3).zfill(2)
@@ -803,4 +803,4 @@ st.markdown("""
     본 서비스는 AI 기반 참고 상담이며, 전문 심리상담을 대체하지 않습니다.<br>
     © 2026 JADE AI | Powered by GPT-4o-mini + Whisper + ElevenLabs
 </div>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True
