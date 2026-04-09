@@ -318,7 +318,24 @@ def search_similar(db, query, n_results=5, source_filter=None):
     # 월특강 질문이면 apply_filter 무시하고 lecture_summary만 검색
     is_lecture_q = any(kw in query for kw in LECTURE_QUERY_KEYWORDS)
     if is_lecture_q:
-        filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+        # 연도+월 파싱 시도 (예: "26년 3월", "2026년 3월", "26년03월")
+        year_month_key = None
+        ym_match = re.search(r'(20)?(\d{2})년\s*(\d{1,2})월', query)
+        if ym_match:
+            yy = ym_match.group(2)
+            mm = ym_match.group(3).zfill(2)
+            year_month_key = f"{yy}{mm}"  # 예: "2603"
+
+        if year_month_key:
+            # 특정 연도+월 파일만 검색
+            filter_indices = [i for i, m in enumerate(db['metadata'])
+                              if m.get('source_type') == 'lecture_summary'
+                              and year_month_key in m.get('filename', '')]
+            # 없으면 전체 lecture_summary 검색
+            if not filter_indices:
+                filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+        else:
+            filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
     else:
         filter_indices = apply_filter(db, source_filter)
         # 도서/월특강요약 데이터 검색 제외 (추후 활성화 시 아래 4줄 삭제)
