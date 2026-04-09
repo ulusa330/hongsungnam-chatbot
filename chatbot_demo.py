@@ -771,9 +771,8 @@ if prompt:
                                 source_info['newspaper'] = meta.get('newspaper', '신문')
                             sources.append(source_info)
 
-                    # 월특강 요약 질문 감지
-                    lecture_keywords = ['월특강', '특강 요약', '특강요약', '특강영상', '특강 영상', '월 특강', '특강 보고', '특강 알려', '요약해줘', '요약해 줘', '요약 해줘']
-                    is_lecture_query = any(kw in prompt for kw in lecture_keywords)
+                    # 월특강 요약 질문 감지 (전역 LECTURE_QUERY_KEYWORDS 사용)
+                    is_lecture_query = any(kw in prompt for kw in LECTURE_QUERY_KEYWORDS)
 
                     if not is_schedule_query:
                         with st.expander("📚 참고 자료", expanded=True):
