@@ -677,10 +677,15 @@ if prompt:
                 source_filter = detect_source_filter(prompt)
                 results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
 
+                is_lecture_query = any(kw in prompt for kw in LECTURE_QUERY_KEYWORDS)
                 if (results is None or not results.get('documents')) and source_filter is not None:
-                    st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
-                    source_filter = None
-                    results = search_similar(db, prompt, n_results=n_results, source_filter=None)
+                    if is_lecture_query:
+                        # 월특강 질문은 폴백해도 lecture_summary만 검색
+                        results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
+                    else:
+                        st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
+                        source_filter = None
+                        results = search_similar(db, prompt, n_results=n_results, source_filter=None)
 
                 if results and results['documents']:
                     docs = results['documents']
