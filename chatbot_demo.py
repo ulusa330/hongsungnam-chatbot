@@ -244,7 +244,12 @@ def apply_filter(db, source_filter):
                 if any(kw in title for kw in series_keywords) or filter_value in title:
                     valid_indices.append(i)
         elif filter_type == 'monthly_lecture':
-            if meta.get('source_type', 'youtube') == 'youtube':
+            source_type = meta.get('source_type', 'youtube')
+            # lecture_summary 타입은 무조건 포함
+            if source_type == 'lecture_summary':
+                valid_indices.append(i)
+            # 유튜브 영상 중 날짜 패턴이 있는 것도 포함
+            elif source_type == 'youtube':
                 if MONTHLY_LECTURE_PATTERN.search(meta.get('title', '')):
                     valid_indices.append(i)
         elif filter_type == 'source_type':
