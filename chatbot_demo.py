@@ -803,4 +803,4 @@ st.markdown("""
     본 서비스는 AI 기반 참고 상담이며, 전문 심리상담을 대체하지 않습니다.<br>
     © 2026 JADE AI | Powered by GPT-4o-mini + Whisper + ElevenLabs
 </div>
-""", unsafe_allow_html=True
+""", unsafe_allow_html=True)
