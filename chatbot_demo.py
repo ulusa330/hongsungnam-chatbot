@@ -335,7 +335,18 @@ def search_similar(db, query, n_results=5, source_filter=None):
             if not filter_indices:
                 filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
         else:
-            filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+             # 연도 없으면 해당 월의 가장 최근 파일 검색
+            month_match = re.search(r'(\d{1,2})월', query)
+            if month_match:
+                mm = month_match.group(1).zfill(2)
+                # 해당 월 파일 중 가장 최근 것
+                month_files = [i for i, m in enumerate(db['metadata'])
+                               if m.get('source_type') == 'lecture_summary'
+                               and m.get('filename', '').endswith('_월특강_요약.md')
+                               and m.get('filename', '')[2:4] == mm]
+                filter_indices = month_files if month_files else [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+            else:
+                filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
     else:
         filter_indices = apply_filter(db, source_filter)
         # 도서/월특강요약 데이터 검색 제외 (추후 활성화 시 아래 4줄 삭제)
