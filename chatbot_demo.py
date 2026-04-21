@@ -510,7 +510,7 @@ with st.sidebar:
         else:
             st.info("💬 텍스트 답변 모드")
         st.markdown("---")
-    n_results = st.slider("참고 문서 수", 3, 10, 5)
+    n_results = st.slider("참고 문서 수", 3, 10, 7)
     st.markdown("---")
     st.markdown("**시스템 상태**")
     if db:
