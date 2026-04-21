@@ -626,8 +626,6 @@ if prompt:
                                 src_type = src.get('source_type', 'youtube')
                                 if is_lecture_query and src_type != 'lecture_summary':
                                     continue
-                                if not is_lecture_query and src_type == 'lecture_summary':
-                                    continue
                                 render_source_card(src, show_relevance=True)
 
                     msg = {"role": "assistant", "content": response, "sources": sources, "is_schedule": is_schedule_query}
