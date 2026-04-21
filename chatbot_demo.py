@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ====================================================================
-홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v6)
+홍성남 신부님 톡쏘는 영성심리 - AI 상담 챗봇 데모 (v7)
 ====================================================================
 """
 import os
@@ -13,9 +13,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
-# =====================================================================
-# 강의 일정 로드
-# =====================================================================
 SCHEDULE_FILE = Path(__file__).parent / "schedule.json"
 
 def load_schedule():
@@ -23,15 +20,7 @@ def load_schedule():
         with open(SCHEDULE_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception:
-        return {
-            "next_lecture": {"status": "unconfirmed"},
-            "regular_schedule": {
-                "pattern": "매월 셋째 주 토요일",
-                "time": "오후 3시",
-                "location": "가톨릭회관",
-                "contact": "776-8405"
-            }
-        }
+        return {"next_lecture": {"status": "unconfirmed"}, "regular_schedule": {"pattern": "매월 셋째 주 토요일", "time": "오후 3시", "location": "가톨릭회관", "contact": "776-8405"}}
 
 SCHEDULE = load_schedule()
 
@@ -62,25 +51,12 @@ def get_schedule_card_html():
         detail_parts = [p for p in [fee_text, contact_text] if p]
         detail_line = " | ".join(detail_parts)
         note_line = f'<div style="margin-top:0.4rem;font-size:0.85rem;color:#c9d4e8;">{note}</div>' if note else ""
-        return f"""
-        <div style="background:linear-gradient(135deg,#1B2B5E 0%,#2d4a8c 100%);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border-left:4px solid #C9A84C;box-shadow:0 2px 12px rgba(27,43,94,0.3);">
-            <div style="color:#C9A84C;font-weight:700;font-size:1.05rem;margin-bottom:0.4rem;">📅 {year}년 {month}월 {title} 안내</div>
-            <div style="color:white;font-size:0.95rem;">{month}월 {day}일({dow}) {time_str} | {location}</div>
-            <div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">{detail_line}</div>
-            {note_line}
-        </div>
-        """
+        return f"""<div style="background:linear-gradient(135deg,#1B2B5E 0%,#2d4a8c 100%);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border-left:4px solid #C9A84C;box-shadow:0 2px 12px rgba(27,43,94,0.3);"><div style="color:#C9A84C;font-weight:700;font-size:1.05rem;margin-bottom:0.4rem;">📅 {year}년 {month}월 {title} 안내</div><div style="color:white;font-size:0.95rem;">{month}월 {day}일({dow}) {time_str} | {location}</div><div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">{detail_line}</div>{note_line}</div>"""
     else:
         pattern = regular.get("pattern", "매월 셋째 주 토요일")
         time = regular.get("time", "오후 3시")
         location = regular.get("location", "가톨릭회관")
-        return f"""
-        <div style="background:linear-gradient(135deg,#1B2B5E 0%,#2d4a8c 100%);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border-left:4px solid #C9A84C;box-shadow:0 2px 12px rgba(27,43,94,0.3);">
-            <div style="color:#C9A84C;font-weight:700;font-size:1.05rem;margin-bottom:0.4rem;">📅 다음 정기특강 안내</div>
-            <div style="color:white;font-size:0.95rem;">{pattern} {time} | {location}</div>
-            <div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">확정 일정은 추후 공지됩니다</div>
-        </div>
-        """
+        return f"""<div style="background:linear-gradient(135deg,#1B2B5E 0%,#2d4a8c 100%);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border-left:4px solid #C9A84C;box-shadow:0 2px 12px rgba(27,43,94,0.3);"><div style="color:#C9A84C;font-weight:700;font-size:1.05rem;margin-bottom:0.4rem;">📅 다음 정기특강 안내</div><div style="color:white;font-size:0.95rem;">{pattern} {time} | {location}</div><div style="color:#a0b0d0;font-size:0.85rem;margin-top:0.3rem;">확정 일정은 추후 공지됩니다</div></div>"""
 
 def get_schedule_prompt_text():
     from datetime import date as dt_date
@@ -110,30 +86,18 @@ def get_schedule_prompt_text():
         except Exception:
             lecture_date = None
         if lecture_date and today > lecture_date:
-            return (f"[강의 일정 규칙] 아쉽게도 {month}월 {title}은 이미 종료되었습니다. 다음 달 강의 일정은 아직 등록되지 않았습니다. 문의: {contact}. 중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것.")
+            return f"[강의 일정 규칙] 아쉽게도 {month}월 {title}은 이미 종료되었습니다. 다음 달 강의 일정은 아직 등록되지 않았습니다. 문의: {contact}. 중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것."
         else:
-            return (f"[강의 일정 규칙] 다음 {title}: {year}년 {month}월 {day}일({dow}) {time_str}, {location}. 회비 {fee}. 문의 {contact}. 중요: 과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것.")
+            return f"[강의 일정 규칙] 다음 {title}: {year}년 {month}월 {day}일({dow}) {time_str}, {location}. 회비 {fee}. 문의 {contact}. 중요: 과거 영상이나 자막에 언급된 다른 날짜의 강의 일정은 절대 안내하지 말 것."
     else:
         pattern = regular.get("pattern", "매월 셋째 주 토요일")
         time = regular.get("time", "오후 3시")
         location = regular.get("location", "가톨릭회관")
         contact = regular.get("contact", "776-8405")
-        return (f"[강의 일정 규칙] 현재 확정된 강의 일정이 없습니다. 정기적으로 {pattern} {time}, {location}에서 진행되나 다음 일정은 아직 나오지 않았습니다. 문의: {contact}. 중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것.")
+        return f"[강의 일정 규칙] 현재 확정된 강의 일정이 없습니다. 정기적으로 {pattern} {time}, {location}에서 진행되나 다음 일정은 아직 나오지 않았습니다. 문의: {contact}. 중요: 과거 영상이나 자막에 언급된 날짜의 강의 일정은 절대 안내하지 말 것."
 
+st.set_page_config(page_title="톡쏘는 영성심리 AI 상담", page_icon="🕊️", layout="wide", initial_sidebar_state="expanded")
 
-# =====================================================================
-# 페이지 설정
-# =====================================================================
-st.set_page_config(
-    page_title="톡쏘는 영성심리 AI 상담",
-    page_icon="🕊️",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-# =====================================================================
-# 커스텀 CSS
-# =====================================================================
 st.markdown("""
 <style>
     .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
@@ -175,7 +139,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================================
-# 출처 필터링 시스템
+# 상수 정의
 # =====================================================================
 NEWSPAPER_FILTERS = {
     '중앙일보': ['중앙일보', '중앙'],
@@ -199,8 +163,42 @@ SOURCE_TYPE_FILTERS = {
 }
 SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '다음 특강 언제']
 BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
-LECTURE_SUMMARY_TYPE = 'lecture_summary'
 LECTURE_QUERY_KEYWORDS = ['월특강', '특강 요약', '특강요약', '특강영상', '특강 영상', '월 특강', '특강 보고', '특강 알려', '요약해줘', '요약해 줘', '요약 해줘', '특강을 요약', '특강 내용', '요약정리', '요약 정리', '특강을 보여', '특강 정리']
+
+def get_lecture_filter_indices(db, query):
+    """월특강 질문에 맞는 lecture_summary 인덱스 반환 - 핵심 함수"""
+    all_summaries = [(i, m) for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+    
+    # 1. 연도+월 파싱 (예: "2026년 4월", "26년 4월", "26년도 4월")
+    ym_match = re.search(r'(20)?(\d{2})년도?\s*(\d{1,2})월', query)
+    if ym_match:
+        yy = ym_match.group(2)
+        mm = ym_match.group(3).zfill(2)
+        year_month_key = f"{yy}{mm}"  # 예: "2604"
+        matched = [i for i, m in all_summaries if year_month_key in m.get('filename', '')]
+        if matched:
+            return matched
+        # 해당 연도+월 파일 없으면 전체 반환
+        return [i for i, m in all_summaries]
+    
+    # 2. 월만 있는 경우 (예: "4월 특강") → 파일명 내림차순 정렬 후 해당 월 최신 파일만
+    month_match = re.search(r'(\d{1,2})월', query)
+    if month_match:
+        mm = month_match.group(1).zfill(2)
+        # 해당 월 파일들 (파일명 형식: YYMM_월특강_요약.md)
+        month_files = [(i, m) for i, m in all_summaries
+                       if m.get('filename', '').endswith('_월특강_요약.md')
+                       and m.get('filename', '')[2:4] == mm]
+        if month_files:
+            # 파일명 내림차순 정렬 → 최신 연도(YY가 큰 것) 우선
+            month_files.sort(key=lambda x: x[1].get('filename', ''), reverse=True)
+            # 가장 최신 YYMM 값의 파일만 선택
+            latest_yymm = month_files[0][1].get('filename', '')[:4]  # 예: "2604"
+            latest_files = [i for i, m in month_files if m.get('filename', '').startswith(latest_yymm)]
+            return latest_files
+    
+    # 3. 월도 없으면 전체 lecture_summary 반환
+    return [i for i, m in all_summaries]
 
 def detect_source_filter(query):
     query_lower = query.lower().strip()
@@ -234,9 +232,8 @@ def apply_filter(db, source_filter):
         filter_type = source_filter['type']
         filter_value = source_filter['value']
         if filter_type == 'newspaper':
-            if meta.get('source_type') == 'column':
-                if filter_value in meta.get('newspaper', ''):
-                    valid_indices.append(i)
+            if meta.get('source_type') == 'column' and filter_value in meta.get('newspaper', ''):
+                valid_indices.append(i)
         elif filter_type == 'youtube_series':
             if meta.get('source_type', 'youtube') == 'youtube':
                 title = meta.get('title', '')
@@ -245,10 +242,8 @@ def apply_filter(db, source_filter):
                     valid_indices.append(i)
         elif filter_type == 'monthly_lecture':
             source_type = meta.get('source_type', 'youtube')
-            # lecture_summary 타입은 무조건 포함
             if source_type == 'lecture_summary':
                 valid_indices.append(i)
-            # 유튜브 영상 중 날짜 패턴이 있는 것도 포함
             elif source_type == 'youtube':
                 if MONTHLY_LECTURE_PATTERN.search(meta.get('title', '')):
                     valid_indices.append(i)
@@ -257,9 +252,6 @@ def apply_filter(db, source_filter):
                 valid_indices.append(i)
     return valid_indices
 
-# =====================================================================
-# 벡터DB 및 OpenAI 초기화
-# =====================================================================
 VECTORDB_DIR = Path("./vectordb_홍성남신부")
 EMBEDDINGS_FILE = VECTORDB_DIR / "embeddings.npz"
 METADATA_FILE = VECTORDB_DIR / "metadata.json"
@@ -277,6 +269,7 @@ def init_vectordb():
         youtube_titles = set()
         column_count = 0
         book_count = 0
+        lecture_count = 0
         for m in metadata_list:
             source_type = m.get('source_type', 'youtube')
             if source_type == 'youtube':
@@ -285,6 +278,8 @@ def init_vectordb():
                 column_count += 1
             elif source_type in BOOK_SOURCE_TYPES:
                 book_count += 1
+            elif source_type == 'lecture_summary':
+                lecture_count += 1
         return {
             'embeddings': embeddings,
             'metadata': metadata_list,
@@ -293,6 +288,7 @@ def init_vectordb():
             'youtube_count': len(youtube_titles),
             'column_count': column_count,
             'book_count': book_count,
+            'lecture_count': lecture_count,
         }
     except Exception as e:
         st.error(f"벡터DB 로드 오류: {e}")
@@ -315,73 +311,39 @@ def search_similar(db, query, n_results=5, source_filter=None):
         return None
     response = openai_client.embeddings.create(model="text-embedding-3-small", input=query)
     query_embedding = np.array(response.data[0].embedding)
-    # 월특강 질문이면 apply_filter 무시하고 lecture_summary만 검색
+
+    # 월특강 질문이면 전용 함수로 처리
     is_lecture_q = any(kw in query for kw in LECTURE_QUERY_KEYWORDS)
     if is_lecture_q:
-        # 연도+월 파싱 시도 (예: "26년 3월", "2026년 3월", "26년03월")
-        year_month_key = None
-        ym_match = re.search(r'(20)?(\d{2})년도?\s*(\d{1,2})월', query)
-        if ym_match:
-            yy = ym_match.group(2)
-            mm = ym_match.group(3).zfill(2)
-            year_month_key = f"{yy}{mm}"  # 예: "2603"
-
-        if year_month_key:
-            # 특정 연도+월 파일만 검색
-            filter_indices = [i for i, m in enumerate(db['metadata'])
-                              if m.get('source_type') == 'lecture_summary'
-                              and year_month_key in m.get('filename', '')]
-            # 없으면 전체 lecture_summary 검색
-            if not filter_indices:
-                filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
-        else:
-             # 연도 없으면 해당 월의 가장 최근 파일 검색
-            month_match = re.search(r'(\d{1,2})월', query)
-            if month_match:
-                mm = month_match.group(1).zfill(2)
-                # 해당 월 파일 중 가장 최근 것
-                month_files = [i for i, m in enumerate(db['metadata'])
-                               if m.get('source_type') == 'lecture_summary'
-                               and m.get('filename', '').endswith('_월특강_요약.md')
-                               and m.get('filename', '')[2:4] == mm]
-                filter_indices = month_files if month_files else [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
-            else:
-                filter_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') == 'lecture_summary']
+        filter_indices = get_lecture_filter_indices(db, query)
     else:
         filter_indices = apply_filter(db, source_filter)
-        # 도서/월특강요약 데이터 검색 제외 (추후 활성화 시 아래 4줄 삭제)
-        book_excluded = [i for i, m in enumerate(db['metadata'])
-                         if m.get('source_type') not in BOOK_SOURCE_TYPES
-                         and m.get('source_type') != 'lecture_summary']
-        book_excluded_set = set(book_excluded)
+        # 도서/월특강요약 검색 제외 (추후 활성화 시 아래 5줄 삭제)
+        excluded_types = set(BOOK_SOURCE_TYPES) | {'lecture_summary'}
+        normal_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in excluded_types]
+        normal_set = set(normal_indices)
         if filter_indices is not None:
-            filter_indices = [i for i in filter_indices if i in book_excluded_set]
+            filter_indices = [i for i in filter_indices if i in normal_set]
         else:
-            filter_indices = book_excluded
+            filter_indices = normal_indices
 
-    if filter_indices is not None and len(filter_indices) == 0:
+    if not filter_indices:
         return None
+
     embeddings = db['embeddings']
-    if filter_indices is not None:
-        filter_indices = np.array(filter_indices)
-        filtered_embeddings = embeddings[filter_indices]
-        similarities = np.array([cosine_similarity(query_embedding, emb) for emb in filtered_embeddings])
-        top_local = np.argsort(similarities)[::-1][:n_results]
-        top_indices = filter_indices[top_local]
-        top_sims = similarities[top_local]
-    else:
-        similarities = np.array([cosine_similarity(query_embedding, emb) for emb in embeddings])
-        top_indices = np.argsort(similarities)[::-1][:n_results]
-        top_sims = similarities[top_indices]
+    filter_indices = np.array(filter_indices)
+    filtered_embeddings = embeddings[filter_indices]
+    similarities = np.array([cosine_similarity(query_embedding, emb) for emb in filtered_embeddings])
+    top_local = np.argsort(similarities)[::-1][:n_results]
+    top_indices = filter_indices[top_local]
+    top_sims = similarities[top_local]
+
     return {
         'documents': [db['documents'][i] for i in top_indices],
         'metadatas': [db['metadata'][i] for i in top_indices],
         'similarities': [float(s) for s in top_sims],
     }
 
-# =====================================================================
-# 음성 관련 함수
-# =====================================================================
 def transcribe_audio(audio_bytes):
     openai_client = init_openai()
     if not openai_client:
@@ -413,9 +375,6 @@ def text_to_speech(text):
     except Exception:
         return None
 
-# =====================================================================
-# RAG 응답 생성
-# =====================================================================
 def generate_response(query, context_docs, context_metas, source_filter=None):
     openai_client = init_openai()
     if not openai_client:
@@ -427,11 +386,10 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         schedule_response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요. 답변은 2~3문장마다 줄바꿈을 해서 읽기 편하게 작성하세요.\n\n{schedule_text}"},
+                {"role": "system", "content": f"당신은 홍성남 마태오 신부입니다. 따뜻하고 친근한 신부님 말투로 답변하세요. 출처나 참고자료는 절대 표시하지 마세요.\n\n{schedule_text}"},
                 {"role": "user", "content": query}
             ],
-            temperature=0.5,
-            max_tokens=500,
+            temperature=0.5, max_tokens=500,
         )
         return schedule_response.choices[0].message.content
 
@@ -440,8 +398,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         title = meta.get('title', '제목 미상')
         source_type = meta.get('source_type', 'youtube')
         if source_type == 'column':
-            newspaper = meta.get('newspaper', '신문')
-            source_label = f"신문 칼럼 - {newspaper}"
+            source_label = f"신문 칼럼 - {meta.get('newspaper', '신문')}"
         elif source_type in BOOK_SOURCE_TYPES:
             source_label = "저서"
         elif source_type == 'lecture_summary':
@@ -451,9 +408,7 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         context_parts.append(f"[출처 {i+1}: {title} ({source_label})]\n{doc}")
     context = "\n\n---\n\n".join(context_parts)
 
-    filter_instruction = ""
-    if source_filter:
-        filter_instruction = f"\n\n[현재 검색 필터] {source_filter.get('label', '')}"
+    filter_instruction = f"\n\n[현재 검색 필터] {source_filter.get('label', '')}" if source_filter else ""
 
     system_prompt = f"""당신은 홍성남 마태오 신부의 말투와 관점으로 직접 상담해 주는 AI입니다.
 
@@ -466,7 +421,6 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 - 스타일: 심리 상담과 영성지도를 결합, 직설적이고 현실적인 언어 사용
 
 [맹모닝 상담소 파트너 — 맹경순 베로니카]
-- 이름: 맹경순 (세례명 베로니카)
 - cpbc 아나운서, 현재 유튜브 '톡쏘는 영성심리' 채널에서 함께 진행
 
 [나의 저서]
@@ -476,34 +430,26 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 [말투 규칙]
 - "홍성남 신부님은 ~라고 말씀하셨습니다" 절대 금지 — 1인칭으로만 말하세요
 - 따뜻하면서도 직설적이고 톡 쏘는 어조
-- "늘 강조하는 건데요", "강의에서도 말씀드렸지만" 같은 표현 자연스럽게 사용
 
 [상담 안내 규칙 — 매우 중요]
 - 상담 요청 시 "감사합니다", "반갑습니다" 같은 환영 문구 절대 금지
 - 바로 핵심만: "저는 현재 성직자 상담만 하고 있어서 일반 신자분들과 개인 상담은 어렵습니다."
-- 이후 아래 두 가지 안내:
-  1. 전문 상담: 가톨릭영성심리상담소 (02-776-8405, 오전 11시~오후 4시)
-  2. 유튜브 방송 상담: talktoclinic@naver.com 으로 사연 보내주시면 방송을 통해 답변드립니다.
+- 전문 상담: 가톨릭영성심리상담소 (02-776-8405, 오전 11시~오후 4시)
+- 유튜브 방송 상담: talktoclinic@naver.com 으로 사연 보내주시면 방송을 통해 답변드립니다.
 
-[시제 규칙 — 매우 중요]
-- 과거 특강 내용을 답변할 때 반드시 과거형 사용: ~였습니다, ~했습니다, ~다루었습니다
-- 절대 과거 특강에 대해 ~예정입니다, ~진행될 것입니다 같은 미래형 사용 금지
-- 컨텍스트에 "내년", "다음 달", "앞으로" 같은 표현이 있어도 과거 특강 내용이면 과거형으로 바꿔서 말할 것
-- 요약본에 내용이 있으면 해당 내용을 반드시 답변할 것. 절대 "정보가 없다"고 하지 말 것.
+[시제 규칙]
+- 과거 특강 내용 답변 시 반드시 과거형: ~였습니다, ~했습니다, ~다루었습니다
+- 미래형 절대 금지: ~예정입니다, ~진행될 것입니다
 
 [월특강 요약 답변 규칙 — 매우 중요]
-- 컨텍스트에 월특강 요약 내용이 제공되면 반드시 그 내용을 바탕으로 답변할 것. "정보가 없다", "확인할 수 없다"는 절대 금지.
-- 월특강 요약 질문에 연도가 명시되지 않은 경우: 가장 최근 특강(2026년)으로 답변할 것.
-- 연도가 명시된 경우(예: "2026년 3월 특강", "26년 3월 특강"): 해당 연도 월의 요약본 내용만 사용할 것
-- "26년" = 2026년, "25년" = 2025년 으로 인식할 것
-- 요약본에 없는 내용은 "해당 특강 요약본에서 확인할 수 없습니다"라고 말할 것
-- 유튜브 채널(https://youtube.com/@fr.hongsungnam)에서 직접 영상을 찾아볼 수 있다고 안내할 것
+- 컨텍스트에 월특강 요약이 제공되면 반드시 그 내용으로 답변. "정보가 없다" 절대 금지.
+- 컨텍스트에 있는 내용이 곧 해당 특강의 내용이므로 그대로 답변할 것.
+- 유튜브 채널(https://youtube.com/@fr.hongsungnam)에서 영상 확인 가능하다고 안내.
 
 [규칙]
 1. 제공된 컨텍스트를 기반으로 답변하세요.
 2. 의학적 진단이나 처방은 절대 하지 마세요.
-3. 한국어로 답변하세요.
-4. 강의 일정·상담소 연락처 안내 시 출처를 표시하지 마세요.{filter_instruction}"""
+3. 한국어로 답변하세요.{filter_instruction}"""
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -515,18 +461,11 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
         messages = [messages[0]] + history_messages + [messages[1]]
 
     response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0.3,
-        max_tokens=4000,
+        model="gpt-4o-mini", messages=messages, temperature=0.3, max_tokens=4000,
     )
     return response.choices[0].message.content
 
-# =====================================================================
-# 참고 자료 카드 렌더링 함수
-# =====================================================================
 def render_source_card(src, show_relevance=False):
-    """source_type에 따라 적절한 카드 렌더링"""
     source_type = src.get('source_type', 'youtube')
     title = src.get('title', '')
     date = src.get('date', '')
@@ -537,67 +476,32 @@ def render_source_card(src, show_relevance=False):
     if source_type == 'column':
         newspaper = src.get('newspaper', '신문')
         link = f'<a href="{url}" target="_blank">🔗 칼럼 보기</a>' if url else ''
-        st.markdown(f'''
-        <div class="source-card-column">
-            <div class="title">📰 {title}</div>
-            <div class="meta">📅 {date} | {newspaper}{relevance_str}{" | " + link if link else ""}</div>
-        </div>''', unsafe_allow_html=True)
+        st.markdown(f'<div class="source-card-column"><div class="title">📰 {title}</div><div class="meta">📅 {date} | {newspaper}{relevance_str}{" | " + link if link else ""}</div></div>', unsafe_allow_html=True)
     elif source_type in BOOK_SOURCE_TYPES:
         book_label = {'book_hong': '홍성남 저서', 'book_bible': '성경 묵상', 'book_spiritual': '영성 자료'}.get(source_type, '저서')
-        st.markdown(f'''
-        <div class="source-card-book">
-            <div class="title">📖 {title}</div>
-            <div class="meta">📚 {book_label}{relevance_str}</div>
-        </div>''', unsafe_allow_html=True)
+        st.markdown(f'<div class="source-card-book"><div class="title">📖 {title}</div><div class="meta">📚 {book_label}{relevance_str}</div></div>', unsafe_allow_html=True)
     elif source_type == 'lecture_summary':
         channel_link = '<a href="https://youtube.com/@fr.hongsungnam" target="_blank">🔗 유튜브 채널 보기</a>'
-        st.markdown(f'''
-        <div class="source-card" style="border-left-color:#6366F1;">
-            <div class="title">🎓 {title}</div>
-            <div class="meta">📅 월특강 요약{relevance_str} | {channel_link}</div>
-        </div>''', unsafe_allow_html=True)
+        st.markdown(f'<div class="source-card" style="border-left-color:#6366F1;"><div class="title">🎓 {title}</div><div class="meta">📅 월특강 요약{relevance_str} | {channel_link}</div></div>', unsafe_allow_html=True)
     else:
         link = f'<a href="{url}" target="_blank">🔗 영상 보기</a>' if url else ''
-        st.markdown(f'''
-        <div class="source-card">
-            <div class="title">📹 {title}</div>
-            <div class="meta">📅 {date}{relevance_str}{" | " + link if link else ""}</div>
-        </div>''', unsafe_allow_html=True)
+        st.markdown(f'<div class="source-card"><div class="title">📹 {title}</div><div class="meta">📅 {date}{relevance_str}{" | " + link if link else ""}</div></div>', unsafe_allow_html=True)
 
-# =====================================================================
-# API 키 미리 로드 (사이드바 오류 방지)
-# =====================================================================
 voice_api_key = st.secrets.get("ELEVENLABS_API_KEY", os.environ.get("ELEVENLABS_API_KEY", ""))
 
-# =====================================================================
-# 사이드바
-# =====================================================================
 with st.sidebar:
     st.markdown("### 🕊️ 톡쏘는 영성심리")
     st.markdown("**AI 심리상담 도우미**")
     st.markdown("---")
-
     db = init_vectordb()
     openai_client = init_openai()
-
     if db:
-        st.markdown("""
-        <div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.8rem; margin-top: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
-            <span style="color: #C9A84C; font-size: 0.85rem;">⚠ 이 프로그램은 테스트 용도로 만들어진 것입니다.</span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.8rem; margin-top: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);"><span style="color: #C9A84C; font-size: 0.85rem;">⚠ 이 프로그램은 테스트 용도로 만들어진 것입니다.</span></div>', unsafe_allow_html=True)
         st.markdown(f'<div class="stat-card"><div class="number">{db["count"]:,}</div><div class="label">학습된 텍스트 조각</div></div>', unsafe_allow_html=True)
-        youtube_count = db.get('youtube_count', 1036)
-        column_count = db.get('column_count', 0)
-        book_count = db.get('book_count', 0)
-        st.markdown(f'<div class="stat-card"><div class="number">{youtube_count:,}</div><div class="label">📹 분석된 강의 영상</div></div>', unsafe_allow_html=True)
-        if column_count > 0:
-            st.markdown(f'<div class="stat-card"><div class="number">{column_count:,}</div><div class="label">📰 수집된 신문 칼럼</div></div>', unsafe_allow_html=True)
-        if book_count > 0:
-            st.markdown(f'<div class="stat-card"><div class="number">{book_count:,}</div><div class="label">📚 수집된 도서</div></div>', unsafe_allow_html=True)
-
+        st.markdown(f'<div class="stat-card"><div class="number">{db.get("youtube_count", 0):,}</div><div class="label">📹 분석된 강의 영상</div></div>', unsafe_allow_html=True)
+        if db.get('column_count', 0) > 0:
+            st.markdown(f'<div class="stat-card"><div class="number">{db["column_count"]:,}</div><div class="label">📰 수집된 신문 칼럼</div></div>', unsafe_allow_html=True)
     st.markdown("---")
-
     if voice_api_key:
         st.markdown("**🎙️ 음성 응답 설정**")
         voice_mode = st.toggle("신부님 목소리로 답변 듣기", value=False, key="voice_mode")
@@ -606,7 +510,6 @@ with st.sidebar:
         else:
             st.info("💬 텍스트 답변 모드")
         st.markdown("---")
-
     n_results = st.slider("참고 문서 수", 3, 10, 5)
     st.markdown("---")
     st.markdown("**시스템 상태**")
@@ -622,29 +525,10 @@ with st.sidebar:
         st.success("ElevenLabs 연결됨")
     else:
         st.warning("ElevenLabs 미설정")
-
     st.markdown("---")
-    st.markdown("""
-    <div style="font-size: 0.75rem; color: #8899bb;">
-        <b>개발: 이재욱 토마스</b><br>
-        talktoclinic@gmail.com<br>
-        유튜브: youtube.com/@fr.hongsungnam<br><br>
-        <b>Powered by</b><br>
-        OpenAI GPT-4o-mini + Whisper<br>
-        ElevenLabs TTS<br>
-        벡터 검색 (numpy)
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div style="font-size: 0.75rem; color: #8899bb;"><b>개발: 이재욱 토마스</b><br>talktoclinic@gmail.com<br>유튜브: youtube.com/@fr.hongsungnam<br><br><b>Powered by</b><br>OpenAI GPT-4o-mini + Whisper<br>ElevenLabs TTS<br>벡터 검색 (numpy)</div>', unsafe_allow_html=True)
 
-# =====================================================================
-# 메인 영역
-# =====================================================================
-st.markdown("""
-<div class="main-header">
-    <h1>🕊️ 톡쏘는 영성심리 AI 상담</h1>
-    <p>유튜브 채널 "홍성남 신부님의 톡쏘는 영성심리"의 영상들과 신문 칼럼, 저서들을 학습한 AI가 심리 및 영성 상담을 도와 드립니다</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="main-header"><h1>🕊️ 톡쏘는 영성심리 AI 상담</h1><p>유튜브 채널 "홍성남 신부님의 톡쏘는 영성심리"의 영상들과 신문 칼럼, 저서들을 학습한 AI가 심리 및 영성 상담을 도와 드립니다</p></div>', unsafe_allow_html=True)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -655,14 +539,7 @@ if not st.session_state.messages:
     st.markdown(get_schedule_card_html(), unsafe_allow_html=True)
     st.markdown("#### 💬 이런 질문을 해보세요")
     col1, col2 = st.columns(2)
-    example_questions = [
-        "화가 날 때 어떻게 해야 하나요?",
-        "나르시시스트 상사와 어떻게 지내야 하나요?",
-        "자존감이 낮은데 어떻게 해야 할까요?",
-        "부모님과의 관계가 힘들어요",
-        "용서한다는 것은 어떤 의미인가요?",
-        "우울할 때 신앙이 도움이 되나요?",
-    ]
+    example_questions = ["화가 날 때 어떻게 해야 하나요?", "나르시시스트 상사와 어떻게 지내야 하나요?", "자존감이 낮은데 어떻게 해야 할까요?", "부모님과의 관계가 힘들어요", "용서한다는 것은 어떤 의미인가요?", "우울할 때 신앙이 도움이 되나요?"]
     for i, q in enumerate(example_questions):
         col = col1 if i % 2 == 0 else col2
         if col.button(q, key=f"example_{i}", use_container_width=True):
@@ -670,21 +547,16 @@ if not st.session_state.messages:
             st.rerun()
     st.markdown("---")
 
-# 기존 메시지 표시
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🙋" if message["role"] == "user" else "🕊️"):
         st.markdown(message["content"])
         if message["role"] == "assistant" and "audio" in message:
             st.audio(message["audio"], format="audio/mp3")
-        if message["role"] == "assistant" and "sources" in message:
-            if not message.get("is_schedule", False):
-                with st.expander("📚 참고 자료", expanded=False):
-                    for src in message["sources"]:
-                        render_source_card(src, show_relevance=False)
+        if message["role"] == "assistant" and "sources" in message and not message.get("is_schedule", False):
+            with st.expander("📚 참고 자료", expanded=False):
+                for src in message["sources"]:
+                    render_source_card(src, show_relevance=False)
 
-# =====================================================================
-# 채팅 입력 처리
-# =====================================================================
 pending = st.session_state.pop("pending_question", None)
 prompt = st.chat_input("심리·영성 관련 질문을 해보세요...")
 if pending:
@@ -703,18 +575,14 @@ if prompt:
         else:
             with st.spinner("잠시만 기다려 주세요..."):
                 is_schedule_query = any(kw in prompt for kw in SCHEDULE_KEYWORDS)
+                is_lecture_query = any(kw in prompt for kw in LECTURE_QUERY_KEYWORDS)
                 source_filter = detect_source_filter(prompt)
                 results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
 
-                is_lecture_query = any(kw in prompt for kw in LECTURE_QUERY_KEYWORDS)
-                if (results is None or not results.get('documents')) and source_filter is not None:
-                    if is_lecture_query:
-                        # 월특강 질문은 폴백해도 lecture_summary만 검색
-                        results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
-                    else:
-                        st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
-                        source_filter = None
-                        results = search_similar(db, prompt, n_results=n_results, source_filter=None)
+                if (results is None or not results.get('documents')) and source_filter is not None and not is_lecture_query:
+                    st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
+                    source_filter = None
+                    results = search_similar(db, prompt, n_results=n_results, source_filter=None)
 
                 if results and results['documents']:
                     docs = results['documents']
@@ -727,20 +595,7 @@ if prompt:
                     response = generate_response(prompt, docs, metas, source_filter)
                     st.markdown(response)
 
-                    # 모바일 자동 스크롤 — 답변 첫 줄이 보이도록
-                    st.markdown("""
-                    <script>
-                    setTimeout(function() {
-                        var messages = window.parent.document.querySelectorAll('[data-testid="stChatMessage"]');
-                        if (messages.length > 0) {
-                            var lastMsg = messages[messages.length - 1];
-                            var rect = lastMsg.getBoundingClientRect();
-                            var scrollTop = window.parent.pageYOffset + rect.top - 60;
-                            window.parent.scrollTo({top: scrollTop, behavior: 'smooth'});
-                        }
-                    }, 500);
-                    </script>
-                    """, unsafe_allow_html=True)
+                    st.markdown("""<script>setTimeout(function() {var messages = window.parent.document.querySelectorAll('[data-testid="stChatMessage"]');if (messages.length > 0) {var lastMsg = messages[messages.length - 1];var rect = lastMsg.getBoundingClientRect();var scrollTop = window.parent.pageYOffset + rect.top - 60;window.parent.scrollTo({top: scrollTop, behavior: 'smooth'});}}, 500);</script>""", unsafe_allow_html=True)
 
                     audio_data = None
                     if st.session_state.get("voice_mode", False):
@@ -751,17 +606,7 @@ if prompt:
 
                     counseling_keywords = ['상담 받고', '상담받고', '상담 신청', '상담하고 싶', '상담을 받', '상담 원', '상담소 번호', '상담소 전화', '전화번호 알려', '상담받고 싶', '상담하고싶', '상담 원해', '상담 부탁']
                     if any(kw in prompt for kw in counseling_keywords) and '02-776-8405' in response:
-                        st.markdown("""
-                        <div style="background:linear-gradient(135deg,#1B2B5E,#2d4a8c);border-radius:12px;padding:1rem 1.5rem;margin:1rem 0;">
-                            <div style="color:#C9A84C;font-weight:700;font-size:1rem;margin-bottom:0.8rem;">📞 상담 안내</div>
-                            <a href="tel:02-776-8405" target="_blank" style="display:block;background:linear-gradient(135deg,#C9A84C,#e0b84a);color:#1B2B5E !important;padding:0.7rem 1.2rem;border-radius:8px;text-decoration:none;font-size:1rem;font-weight:600;margin-bottom:0.5rem;text-align:center;">
-                            📞 가톨릭영성심리상담소 전화 연결<br>
-                            <span style="font-size:0.85rem;font-weight:400;">02-776-8405 (오전 11시~오후 4시)</span></a>
-                            <a href="mailto:talktoclinic@naver.com" style="display:block;background:rgba(255,255,255,0.1);color:white !important;padding:0.7rem 1.2rem;border-radius:8px;text-decoration:none;font-size:0.95rem;text-align:center;margin-top:0.5rem;">
-                            ✉️ 유튜브 방송 상담 신청<br>
-                            <span style="font-size:0.85rem;color:#a0b0d0;">talktoclinic@naver.com 으로 사연 보내기</span></a>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.markdown("""<div style="background:linear-gradient(135deg,#1B2B5E,#2d4a8c);border-radius:12px;padding:1rem 1.5rem;margin:1rem 0;"><div style="color:#C9A84C;font-weight:700;font-size:1rem;margin-bottom:0.8rem;">📞 상담 안내</div><a href="tel:02-776-8405" target="_blank" style="display:block;background:linear-gradient(135deg,#C9A84C,#e0b84a);color:#1B2B5E !important;padding:0.7rem 1.2rem;border-radius:8px;text-decoration:none;font-size:1rem;font-weight:600;margin-bottom:0.5rem;text-align:center;">📞 가톨릭영성심리상담소 전화 연결<br><span style="font-size:0.85rem;font-weight:400;">02-776-8405 (오전 11시~오후 4시)</span></a><a href="mailto:talktoclinic@naver.com" style="display:block;background:rgba(255,255,255,0.1);color:white !important;padding:0.7rem 1.2rem;border-radius:8px;text-decoration:none;font-size:0.95rem;text-align:center;margin-top:0.5rem;">✉️ 유튜브 방송 상담 신청<br><span style="font-size:0.85rem;color:#a0b0d0;">talktoclinic@naver.com 으로 사연 보내기</span></a></div>""", unsafe_allow_html=True)
 
                     seen_titles = set()
                     sources = []
@@ -770,24 +615,14 @@ if prompt:
                         if title not in seen_titles:
                             seen_titles.add(title)
                             source_type = meta.get('source_type', 'youtube')
-                            source_info = {
-                                'title': title,
-                                'date': meta.get('upload_date', ''),
-                                'url': meta.get('url', ''),
-                                'relevance': f"{sim * 100:.0f}%",
-                                'source_type': source_type,
-                            }
+                            source_info = {'title': title, 'date': meta.get('upload_date', ''), 'url': meta.get('url', ''), 'relevance': f"{sim * 100:.0f}%", 'source_type': source_type}
                             if source_type == 'column':
                                 source_info['newspaper'] = meta.get('newspaper', '신문')
                             sources.append(source_info)
 
-                    # 월특강 요약 질문 감지 (전역 LECTURE_QUERY_KEYWORDS 사용)
-                    is_lecture_query = any(kw in prompt for kw in LECTURE_QUERY_KEYWORDS)
-
                     if not is_schedule_query:
                         with st.expander("📚 참고 자료", expanded=True):
                             for src in sources:
-                                # 월특강 질문이면 lecture_summary만, 일반 질문이면 lecture_summary 제외
                                 src_type = src.get('source_type', 'youtube')
                                 if is_lecture_query and src_type != 'lecture_summary':
                                     continue
@@ -804,13 +639,4 @@ if prompt:
                     st.markdown(fallback)
                     st.session_state.messages.append({"role": "assistant", "content": fallback})
 
-# =====================================================================
-# 푸터
-# =====================================================================
-st.markdown("""
-<div style="width:100%;text-align:center;color:#888888;font-size:0.8rem;line-height:1.6;padding:20px 0;border-top:1px solid #eeeeee;margin-top:50px;">
-    🕊️ 톡쏘는 영성심리 AI 상담 | 홍성남 신부님 유튜브 강의 및 신문 칼럼 기반<br>
-    본 서비스는 AI 기반 참고 상담이며, 전문 심리상담을 대체하지 않습니다.<br>
-    © 2026 JADE AI | Powered by GPT-4o-mini + Whisper + ElevenLabs
-</div>
-""", unsafe_allow_html=True)
+st.markdown("""<div style="width:100%;text-align:center;color:#888888;font-size:0.8rem;line-height:1.6;padding:20px 0;border-top:1px solid #eeeeee;margin-top:50px;">🕊️ 톡쏘는 영성심리 AI 상담 | 홍성남 신부님 유튜브 강의 및 신문 칼럼 기반<br>본 서비스는 AI 기반 참고 상담이며, 전문 심리상담을 대체하지 않습니다.<br>© 2026 JADE AI | Powered by GPT-4o-mini + Whisper + ElevenLabs</div>""", unsafe_allow_html=True)
