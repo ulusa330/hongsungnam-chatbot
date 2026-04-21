@@ -319,7 +319,7 @@ def search_similar(db, query, n_results=5, source_filter=None):
     else:
         filter_indices = apply_filter(db, source_filter)
         # 도서/월특강요약 검색 제외 (추후 활성화 시 아래 5줄 삭제)
-        excluded_types = set(BOOK_SOURCE_TYPES) | {'lecture_summary'}
+        excluded_types = set(BOOK_SOURCE_TYPES)
         normal_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in excluded_types]
         normal_set = set(normal_indices)
         if filter_indices is not None:
