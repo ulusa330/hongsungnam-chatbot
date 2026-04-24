@@ -161,7 +161,20 @@ SOURCE_TYPE_FILTERS = {
     'column': ['칼럼', '신문', '기고', '신문 칼럼', '신문칼럼'],
     'youtube': ['유튜브', '영상', '동영상', '강의 영상'],
 }
-SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '다음 특강 언제']
+SCHEDULE_KEYWORDS = ['강의 일정', '특강 일정', '다음 강의', '강의 날짜', '다음 특강', '몇월', '몇 월', '다음 특강 언제', '특강 있나요', '특강 있어요', '특강 언제', '특강 있']
+
+# schedule.json에서 다음 특강 월 자동 추가
+try:
+    _next = SCHEDULE.get("next_lecture", {})
+    if _next.get("status") == "confirmed":
+        _month = str(int(_next.get("date", "")[5:7]))
+        SCHEDULE_KEYWORDS.append(f"{_month}월 특강")
+        SCHEDULE_KEYWORDS.append(f"{_month}월에도 특강")
+        SCHEDULE_KEYWORDS.append(f"{_month}월 일정")
+except Exception:
+    pass
+BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
+LECTURE_QUERY_KEYWORDS = [...]
 BOOK_SOURCE_TYPES = ['book_hong', 'book_bible', 'book_spiritual']
 LECTURE_QUERY_KEYWORDS = ['월특강', '특강 요약', '특강요약', '특강영상', '특강 영상', '월 특강', '특강 보고', '특강 알려', '요약해줘', '요약해 줘', '요약 해줘', '특강을 요약', '특강 내용', '요약정리', '요약 정리', '특강을 보여', '특강 정리']
 
