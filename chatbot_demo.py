@@ -463,8 +463,8 @@ def generate_response(query, context_docs, context_metas, source_filter=None):
 [규칙]
 1. 제공된 컨텍스트를 기반으로 답변하세요.
 2. 의학적 진단이나 처방은 절대 하지 마세요.
-3. 한국어로 답변하세요.{filter_instruction}"""
-4. 월특강 요약 컨텍스트가 포함된 경우 반드시 해당 내용도 답변에 포함할 것.
+3. 한국어로 답변하세요.
+4. 월특강 요약이 컨텍스트에 있으면 해당 내용도 반드시 답변에 포함할 것.{filter_instruction}"""
 
     messages = [
         {"role": "system", "content": system_prompt},
