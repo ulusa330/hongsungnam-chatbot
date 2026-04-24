@@ -167,8 +167,12 @@ def parse_lecture_summary_file(filepath):
             yy, mm, dd = code[:2], code[2:4], code[4:]
             date_str = f"20{yy}-{mm}-{dd}"
 
-    # 유튜브 채널 URL (고정)
+    # 영상 URL 추출 (MD 파일에 있으면 사용, 없으면 채널 URL)
     url = "https://youtube.com/@fr.hongsungnam"
+    for line in content.split('\n')[:10]:
+        if '영상 URL:' in line:
+            url = line.split('영상 URL:')[-1].strip()
+            break
 
     return {
         'title': title,
