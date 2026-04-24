@@ -261,7 +261,8 @@ def apply_filter(db, source_filter):
                 if MONTHLY_LECTURE_PATTERN.search(meta.get('title', '')):
                     valid_indices.append(i)
         elif filter_type == 'source_type':
-            if meta.get('source_type', 'youtube') == filter_value:
+            src = meta.get('source_type', 'youtube')
+            if src == filter_value or (filter_value == 'youtube' and src == 'lecture_summary'):
                 valid_indices.append(i)
     return valid_indices
 
