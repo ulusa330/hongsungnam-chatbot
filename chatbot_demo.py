@@ -332,14 +332,8 @@ def search_similar(db, query, n_results=5, source_filter=None):
         filter_indices = get_lecture_filter_indices(db, query)
     else:
         filter_indices = apply_filter(db, source_filter)
-        # 도서/월특강요약 검색 제외 (추후 활성화 시 아래 5줄 삭제)
-        excluded_types = set(BOOK_SOURCE_TYPES)
-        normal_indices = [i for i, m in enumerate(db['metadata']) if m.get('source_type') not in excluded_types]
-        normal_set = set(normal_indices)
-        if filter_indices is not None:
-            filter_indices = [i for i in filter_indices if i in normal_set]
-        else:
-            filter_indices = normal_indices
+        if filter_indices is None:
+            filter_indices = list(range(len(db['metadata'])))
 
     if not filter_indices:
         return None
