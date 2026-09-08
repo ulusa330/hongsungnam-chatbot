@@ -159,12 +159,31 @@ def download_subtitles(videos):
             "--sub-lang", SUBTITLE_LANG,
             "--sub-format", "vtt",
             "--skip-download",
+            "--write-info-json",  # 실제(원본) 제목 확보용 - 아래 참고
             "--no-warnings",
             "-o", str(RAW_SUB_DIR / f"{vid}.%(ext)s"),
             f"https://www.youtube.com/watch?v={vid}"
         ]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
+
+        # --flat-playlist(채널 목록 조회)로 얻은 제목은 유튜브가 반환하는
+        # 자동번역 영문 메타데이터일 수 있음 (원본이 한글이어도 영문으로
+        # 나오는 경우 다수 확인됨). 영상 개별 조회(info.json)는 항상
+        # 원본 제목을 정확히 반환하므로, 새로 다운로드하는 김에 함께 받아
+        # 제목을 원본으로 교정
+        info_json_path = RAW_SUB_DIR / f"{vid}.info.json"
+        if info_json_path.exists():
+            try:
+                with open(info_json_path, 'r', encoding='utf-8') as f:
+                    info = json.load(f)
+                real_title = info.get('title', '')
+                if real_title and real_title != video['title']:
+                    video['title'] = real_title
+                    title = real_title
+            except Exception:
+                pass
+            info_json_path.unlink(missing_ok=True)
 
         # 자막 파일 존재 확인
         sub_files = list(RAW_SUB_DIR.glob(f"{vid}*.vtt"))
