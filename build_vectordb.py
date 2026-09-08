@@ -174,12 +174,18 @@ def parse_lecture_summary_file(filepath):
             url = line.split('영상 URL:')[-1].strip()
             break
 
+    # 임베딩 노이즈 방지: "# 제목 / 출처 / 채널" 머리말과 "*AI 자동생성*" 꼬리말은
+    # 모든 요약 파일에서 동일하게 반복되어 임베딩을 오염시키므로 제외하고
+    # 실제 요약 본문(두 "---" 구분선 사이)만 임베딩 대상으로 사용
+    parts = content.split('---')
+    body = parts[1].strip() if len(parts) >= 3 else content.strip()
+
     return {
         'title': title,
         'upload_date': date_str,
         'video_id': '',
         'url': url,
-        'body': content.strip(),
+        'body': body,
         'filename': filepath.name,
         'source_type': 'lecture_summary',
     }
@@ -386,7 +392,14 @@ def main():
         if not data['body'] or len(data['body']) < 30:
             print(" 건너뜀 (내용 부족)"); completed.add(file_key); continue
 
-        chunks = chunk_text(data['body'])
+        if data['source_type'] == 'lecture_summary':
+            # 요약은 분량이 짧고(보통 1,500~2,500자) 한 강의당 하나의 주제로
+            # 응집되어 있으므로 쪼개지 않고 통째로 1개 벡터로 임베딩
+            # (쪼개면 "핵심 메시지" 청크에만 주제 신호가 몰리고 나머지 청크는
+            #  유사도가 낮아져 검색 시 순위 밖으로 밀려나는 문제가 있었음)
+            chunks = [data['body']]
+        else:
+            chunks = chunk_text(data['body'])
 
         for chunk_idx, chunk in enumerate(chunks):
             meta = {
