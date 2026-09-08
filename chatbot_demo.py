@@ -642,12 +642,20 @@ if prompt:
                 is_schedule_query = any(kw in prompt for kw in SCHEDULE_KEYWORDS)
                 is_lecture_query = any(kw in prompt for kw in LECTURE_QUERY_KEYWORDS)
                 source_filter = detect_source_filter(prompt)
-                results = search_similar(db, prompt, n_results=n_results, source_filter=source_filter)
+
+                # 검색용 쿼리: "해당 영상 찾아줘"처럼 지시어만 있는 후속 질문을
+                # 위해 직전 사용자 발화를 함께 붙여서 검색 정확도를 보완
+                search_query = prompt
+                prior_user_msgs = [m['content'] for m in st.session_state.messages[:-1] if m['role'] == 'user']
+                if prior_user_msgs:
+                    search_query = prior_user_msgs[-1] + ' ' + prompt
+
+                results = search_similar(db, search_query, n_results=n_results, source_filter=source_filter)
 
                 if (results is None or not results.get('documents')) and source_filter is not None and not is_lecture_query:
                     st.info(f"🔍 {source_filter['label']}에서 관련 내용을 찾지 못해 전체에서 검색합니다.")
                     source_filter = None
-                    results = search_similar(db, prompt, n_results=n_results, source_filter=None)
+                    results = search_similar(db, search_query, n_results=n_results, source_filter=None)
 
                 if results and results['documents']:
                     docs = results['documents']
