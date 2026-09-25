@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 .streamlit/secrets.toml
+vectordb_홍성남신부/timestamped_youtube_embeddings.npz
+vectordb_홍성남신부/timestamped_youtube_metadata.json
+vectordb_홍성남신부/_timestamped_progress.json
