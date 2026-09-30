@@ -5,3 +5,9 @@ __pycache__/
 vectordb_홍성남신부/timestamped_youtube_embeddings.npz
 vectordb_홍성남신부/timestamped_youtube_metadata.json
 vectordb_홍성남신부/_timestamped_progress.json
+
+# macOS / 로컬 개발환경
+.venv/
+.DS_Store
+._*
+hongsungnam-skill-server/
